@@ -15,11 +15,11 @@ describe("stepsOf", () => {
       "concept",
       "apply",
       "quiz",
-      "cx",
+      "complexity",
       "interview",
       "answer",
       "project",
     ]);
-    expect(steps.find((s) => s.key === "cx")?.label).toBe("복잡도 판단");
+    expect(steps.find((s) => s.key === "complexity")?.label).toBe("복잡도 판단");
   });
 });

@@ -2,7 +2,7 @@
 // complexity가 있는 토픽(알고리즘)만 "복잡도 판단" 단계가 문제 다음에 추가된다.
 import type { Topic } from "./schema";
 
-export type StepKey = "concept" | "apply" | "quiz" | "cx" | "interview" | "answer" | "project";
+export type StepKey = "concept" | "apply" | "quiz" | "complexity" | "interview" | "answer" | "project";
 
 export interface Step {
   key: StepKey;
@@ -15,7 +15,13 @@ const BASE_STEPS: Step[] = [
   { key: "quiz", label: "문제" },
 ];
 
-const COMPLEXITY_STEP: Step = { key: "cx", label: "복잡도 판단" };
+const COMPLEXITY_STEP: Step = { key: "complexity", label: "복잡도 판단" };
+
+export const STEP_KEYS: StepKey[] = ["concept", "apply", "quiz", "complexity", "interview", "answer", "project"];
+
+export function isStepKey(value: string): value is StepKey {
+  return (STEP_KEYS as string[]).includes(value);
+}
 
 const TAIL_STEPS: Step[] = [
   { key: "interview", label: "면접 질문" },
