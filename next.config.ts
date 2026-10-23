@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
     // next/image의 최적화 API는 서버가 필요해서 정적 export에서는 끌 수밖에 없다.
     unoptimized: true,
   },
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
 };
 
 export default nextConfig;
