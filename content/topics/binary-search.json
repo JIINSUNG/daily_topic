@@ -1,0 +1,165 @@
+{
+  "id": "binary-search",
+  "track": "알고리즘",
+  "level": 1,
+  "minutes": 10,
+  "title": "이진 탐색",
+  "summary": "정렬된 데이터에서 범위를 절반씩 줄여 찾기",
+  "concept": {
+    "analogy": "1부터 100 사이 숫자 맞히기 게임에서 '50!' → '더 커' → '75!'처럼 매번 가운데를 부르면 7번 안에 반드시 맞힐 수 있어요.",
+    "definition": "==정렬된== 배열에서 가운데 값과 목표를 비교해 탐색 범위를 ==절반씩== 줄이는 방법입니다. 시간복잡도는 ==O(log n)==이라 100만 개도 약 20번 비교로 찾습니다.",
+    "terms": [
+      [
+        "전제 조건",
+        "데이터가 정렬되어 있어야 함"
+      ],
+      [
+        "lo / hi",
+        "현재 탐색 범위의 양 끝"
+      ],
+      [
+        "lower bound",
+        "목표 이상인 첫 위치"
+      ]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "function binarySearch(arr, target) {\n  let lo = 0, hi = arr.length - 1;\n  while (lo <= hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid + 1;  // 오른쪽 절반\n    else hi = mid - 1;                     // 왼쪽 절반\n  }\n  return -1;\n}\n\nbinarySearch([2, 5, 8, 12, 16, 23, 38], 23);",
+      "py": "def binary_search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        if arr[mid] < target:\n            lo = mid + 1       # 오른쪽 절반\n        else:\n            hi = mid - 1       # 왼쪽 절반\n    return -1\n\nbinary_search([2, 5, 8, 12, 16, 23, 38], 23)"
+    },
+    "output": {
+      "js": [
+        "5"
+      ],
+      "py": [
+        "5"
+      ]
+    },
+    "explain": "범위가 [0,6] → [4,6] → [5,5]로 줄어 세 번 만에 인덱스 5를 찾습니다. lo <= hi 조건과 mid ± 1을 빠뜨리면 무한 루프가 생기니 경계 조건을 항상 확인하세요.",
+    "note": {
+      "py": "실전에서는 표준 라이브러리 bisect.bisect_left(arr, x)로 lower bound를 바로 구할 수 있어요."
+    }
+  },
+  "quiz": [
+    {
+      "q": "정렬된 배열 길이가 1,000,000일 때 최악의 비교 횟수는 대략?",
+      "options": [
+        "약 1,000번",
+        "약 500,000번",
+        "약 20번",
+        "약 1,000,000번"
+      ],
+      "answer": 2,
+      "explain": "2^20 ≈ 1,048,576이므로 log₂(1,000,000) ≈ 20입니다."
+    },
+    {
+      "q": "이진 탐색을 쓸 수 있는 조건은?",
+      "options": [
+        "데이터에 중복이 없다",
+        "데이터가 연결 리스트다",
+        "데이터가 정렬되어 있다",
+        "데이터 크기가 2의 거듭제곱이다"
+      ],
+      "answer": 2,
+      "explain": "정렬되어 있어야 가운데 값과 비교해 한쪽을 버릴 수 있습니다. 중복이 있어도 되고, 크기 제약도 없습니다."
+    }
+  ],
+  "interview": {
+    "q": "이진 탐색의 동작 원리와 시간복잡도, 구현할 때 주의할 점을 설명해 주세요.",
+    "followups": [
+      "lower bound와 upper bound의 차이는?",
+      "정렬되지 않은 데이터라면 어떻게 하시겠어요?"
+    ],
+    "model": "이진 탐색은 정렬된 배열에서 가운데 값과 목표를 비교해 탐색 범위를 절반씩 줄이는 알고리즘으로, 시간복잡도는 O(log n)입니다. 구현할 때는 반복 조건(lo <= hi)과 범위 갱신(mid + 1, mid - 1) 같은 경계 조건을 잘못 쓰면 무한 루프나 누락이 생기므로 주의해야 합니다. 데이터가 정렬되어 있지 않다면 정렬 비용 O(n log n)을 감수할 만큼 탐색이 반복되는지 따져보고, 한 번만 찾는다면 선형 탐색이 낫습니다.",
+    "keywords": [
+      {
+        "label": "정렬 전제",
+        "match": [
+          "정렬"
+        ]
+      },
+      {
+        "label": "절반씩 줄임",
+        "match": [
+          "절반",
+          "반씩",
+          "반으로"
+        ]
+      },
+      {
+        "label": "O(log n)",
+        "match": [
+          "log"
+        ]
+      },
+      {
+        "label": "경계 조건 / 무한 루프",
+        "match": [
+          "경계",
+          "무한",
+          "lo <= hi",
+          "mid + 1",
+          "mid+1"
+        ]
+      }
+    ]
+  },
+  "project": {
+    "scenario": "아이템 높이가 제각각인 1만 개 리스트를 가상 스크롤로 만들 때, 현재 스크롤 위치에 보여줄 첫 아이템을 찾아야 한다.",
+    "why": "아이템별 누적 높이 배열은 항상 오름차순이라 이진 탐색으로 O(log n)에 찾을 수 있습니다. 매 스크롤마다 처음부터 훑는 O(n)보다 훨씬 빠릅니다.",
+    "fixes": [
+      [
+        "누적 offset 배열",
+        "offsets[i] = i번째 아이템의 시작 y좌표"
+      ],
+      [
+        "이진 탐색",
+        "scrollTop 이하인 마지막 offset의 인덱스 찾기"
+      ],
+      [
+        "렌더링",
+        "그 인덱스부터 화면 높이만큼만 렌더링"
+      ]
+    ],
+    "resume": "가변 높이 가상 스크롤에서 보이는 아이템 탐색을 누적 높이 배열과 이진 탐색으로 구현해, 1만 개 리스트도 부드럽게 스크롤되도록 만들었습니다."
+  },
+  "complexity": {
+    "note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.",
+    "items": [
+      {
+        "type": "limit",
+        "problem": "정렬된 배열이 주어지고, q개의 질문마다 x가 배열에 있는지 답하세요.",
+        "constraint": "n ≤ 1,000,000 · q ≤ 100,000 · 제한 시간 1초",
+        "q": "가장 적절한 풀이의 시간복잡도는?",
+        "options": [
+          "O(n · q)",
+          "O(n²)",
+          "O(n · q · log n)",
+          "O(q log n)"
+        ],
+        "answer": 3,
+        "hint": "질문마다 배열을 처음부터 훑으면 몇 번 연산할까요?",
+        "explain": "질문마다 선형 탐색하면 n·q = 10¹¹로 시간 초과입니다. 이미 정렬되어 있으니 질문마다 이진 탐색을 하면 q log n ≈ 2×10⁶이에요. (배열을 해시 셋에 넣는 O(n + q) 풀이도 가능합니다.)"
+      },
+      {
+        "type": "code",
+        "problem": "x 이상의 제곱수 중 가장 작은 수의 제곱근을 찾는 코드입니다.",
+        "code": {
+          "js": "function sqrtCeil(x) {\n  let lo = 0, hi = x;\n  while (lo < hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (mid * mid >= x) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}",
+          "py": "def sqrt_ceil(x):\n    lo, hi = 0, x\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if mid * mid >= x:\n            hi = mid\n        else:\n            lo = mid + 1\n    return lo"
+        },
+        "q": "x에 대한 시간복잡도는?",
+        "options": [
+          "O(x)",
+          "O(√x)",
+          "O(log x)",
+          "O(1)"
+        ],
+        "answer": 2,
+        "hint": "배열이 없어도, 답이 될 수 있는 범위 0 ~ x를 매번 절반으로 줄이고 있어요.",
+        "explain": "탐색 범위 0 ~ x를 절반씩 줄이므로 O(log x)입니다. 이렇게 '답의 범위'를 이진 탐색하는 방식을 파라메트릭 서치라고 해요."
+      }
+    ]
+  }
+}

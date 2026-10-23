@@ -1,0 +1,32 @@
+{
+  "id": "foo",
+  "track": "CS",
+  "level": 1,
+  "minutes": 10,
+  "title": "스키마가 깨진 토픽",
+  "summary": "answer가 options 범위를 벗어나고 project 필드가 없다",
+  "concept": {
+    "analogy": "비유",
+    "definition": "정의",
+    "terms": [["용어", "설명"]]
+  },
+  "apply": {
+    "code": { "js": "console.log(1);" },
+    "output": { "js": ["1"] },
+    "explain": "설명"
+  },
+  "quiz": [
+    {
+      "q": "질문",
+      "options": ["A", "B"],
+      "answer": 5,
+      "explain": "해설"
+    }
+  ],
+  "interview": {
+    "q": "면접 질문",
+    "followups": ["꼬리 질문"],
+    "model": "모범답안",
+    "keywords": [{ "label": "키워드", "match": ["키워드"] }]
+  }
+}

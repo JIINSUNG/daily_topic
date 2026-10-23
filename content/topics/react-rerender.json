@@ -1,0 +1,127 @@
+{
+  "id": "react-rerender",
+  "track": "프론트엔드",
+  "level": 3,
+  "minutes": 15,
+  "title": "React 리렌더링",
+  "summary": "컴포넌트가 다시 그려지는 조건과 줄이는 방법",
+  "concept": {
+    "analogy": "반장(부모)이 바뀌면 반 전체가 다시 출석을 부릅니다. React.memo는 학생에게 '내 정보가 그대로면 출석 생략' 명찰을 달아주는 것이고, useCallback은 매번 새 명찰을 만들지 않고 같은 명찰을 재사용하는 거예요.",
+    "definition": "컴포넌트는 ==state 변경==, ==부모 리렌더==, 구독 중인 ==context 변경== 때 다시 렌더링됩니다. React는 새 렌더 결과를 이전과 비교(재조정)해 바뀐 부분만 실제 DOM에 반영합니다. ==React.memo==는 props를 얕은 비교해 같으면 렌더링을 건너뛰고, useMemo와 useCallback은 값과 함수의 참조를 유지합니다.",
+    "terms": [
+      [
+        "재조정",
+        "이전 결과와 비교해 바뀐 부분 찾기"
+      ],
+      [
+        "얕은 비교",
+        "객체 내용이 아니라 참조가 같은지 비교"
+      ],
+      [
+        "key",
+        "리스트에서 같은 항목인지 구분하는 값"
+      ]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "const List = React.memo(function List({ onSelect }) {\n  /* 큰 목록 렌더링 */\n});\n\nfunction Page() {\n  const [query, setQuery] = useState('');\n  const onSelect = () => {};        // 렌더마다 새 함수 → memo가 무력화\n  return <List onSelect={onSelect} />;\n}\n\n// 해결: 함수 참조를 유지\nconst onSelect = useCallback(() => {}, []);"
+    },
+    "output": {
+      "js": []
+    },
+    "explain": "query가 바뀌어 Page가 렌더링될 때마다 onSelect는 새 함수가 됩니다. 얕은 비교에서 이전 함수와 다르다고 판단하니 memo로 감싼 List도 리렌더링돼요. useCallback으로 같은 참조를 유지해야 memo가 효과를 냅니다."
+  },
+  "quiz": [
+    {
+      "q": "React.memo로 감싼 Child에 style={{ color: 'red' }}를 넘기면, 부모가 리렌더될 때 Child는?",
+      "options": [
+        "리렌더되지 않는다",
+        "에러가 난다",
+        "style만 갱신된다",
+        "리렌더된다"
+      ],
+      "answer": 3,
+      "explain": "렌더마다 새 객체 리터럴이 만들어져 참조가 달라집니다. 상수로 빼거나 useMemo로 고정해야 합니다."
+    },
+    {
+      "q": "리렌더링의 원인이 아닌 것은?",
+      "options": [
+        "useRef의 current 변경",
+        "setState 호출",
+        "부모 컴포넌트 리렌더",
+        "구독 중인 context 값 변경"
+      ],
+      "answer": 0,
+      "explain": "ref.current는 바꿔도 리렌더링을 일으키지 않습니다. 그래서 화면에 보이지 않는 값을 저장할 때 씁니다."
+    }
+  ],
+  "interview": {
+    "q": "React 컴포넌트가 리렌더링되는 조건과, 불필요한 리렌더링을 줄여본 경험을 말해 주세요.",
+    "followups": [
+      "useMemo를 모든 곳에 쓰면 안 되는 이유는?",
+      "리스트에서 key로 index를 쓰면 어떤 문제가 있나요?"
+    ],
+    "model": "컴포넌트는 자신의 state가 바뀌거나, 부모가 리렌더링되거나, 구독한 context 값이 바뀔 때 다시 렌더링됩니다. 불필요한 리렌더링을 줄일 때는 먼저 React DevTools Profiler로 실제로 느린 컴포넌트를 찾습니다. 그다음 state를 필요한 컴포넌트로 내려 영향 범위를 줄이고, 무거운 자식은 React.memo로 감싸면서 넘기는 함수와 객체는 useCallback, useMemo로 참조를 유지했습니다. 메모이제이션도 비교 비용이 있어서 측정 결과를 보고 필요한 곳에만 적용했습니다.",
+    "keywords": [
+      {
+        "label": "state / props / 부모 리렌더",
+        "match": [
+          "state",
+          "부모",
+          "상태"
+        ]
+      },
+      {
+        "label": "context 변경",
+        "match": [
+          "context",
+          "컨텍스트"
+        ]
+      },
+      {
+        "label": "React.memo / 얕은 비교",
+        "match": [
+          "memo",
+          "얕은"
+        ]
+      },
+      {
+        "label": "useCallback / useMemo 참조 유지",
+        "match": [
+          "usecallback",
+          "usememo",
+          "참조"
+        ]
+      },
+      {
+        "label": "측정 (Profiler)",
+        "match": [
+          "profiler",
+          "프로파일러",
+          "측정",
+          "devtools"
+        ]
+      }
+    ]
+  },
+  "project": {
+    "scenario": "검색어를 한 글자 입력할 때마다 페이지 전체와 상품 500개 카드가 모두 다시 렌더링된다.",
+    "why": "검색어 state가 페이지 최상단에 있어서, 입력할 때마다 페이지 전체가 리렌더링되고 그 아래 모든 자식도 함께 렌더링됩니다.",
+    "fixes": [
+      [
+        "state 내리기",
+        "검색어 state를 검색창 컴포넌트 안으로 옮겨 영향 범위 축소"
+      ],
+      [
+        "memo + useCallback",
+        "상품 목록을 React.memo로 감싸고 넘기는 핸들러 참조 유지"
+      ],
+      [
+        "측정 먼저",
+        "Profiler로 렌더 시간을 비교해 효과 확인"
+      ]
+    ],
+    "resume": "검색 입력마다 상품 목록 전체가 리렌더링되던 문제를 Profiler로 찾아, state 위치 조정과 React.memo 적용으로 입력 시 렌더링 범위를 검색창으로 한정했습니다."
+  }
+}

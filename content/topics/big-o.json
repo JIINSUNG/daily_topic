@@ -1,0 +1,175 @@
+{
+  "id": "big-o",
+  "track": "알고리즘",
+  "level": 1,
+  "minutes": 10,
+  "title": "시간복잡도",
+  "summary": "입력이 커질 때 코드가 얼마나 느려지는가",
+  "concept": {
+    "analogy": "친구 집을 찾을 때 주소를 알면 바로 가고(O(1)), 모르면 집집마다 초인종을 누르고(O(n)), 번지가 정렬돼 있으면 반씩 좁혀 갑니다(O(log n)).",
+    "definition": "시간복잡도는 입력 크기 n이 커질 때 ==연산 횟수가 얼마나 빨리 늘어나는지==를 나타냅니다. 빅오 표기에서는 상수와 낮은 차수를 버리고 ==최고차항==만 봅니다. 대표적인 순서는 ==O(1) < O(log n) < O(n) < O(n log n) < O(n²)==입니다.",
+    "terms": [
+      [
+        "O(n)",
+        "배열 한 번 순회"
+      ],
+      [
+        "O(n²)",
+        "이중 반복문"
+      ],
+      [
+        "O(n log n)",
+        "효율적인 정렬"
+      ],
+      [
+        "공간복잡도",
+        "추가로 쓰는 메모리의 양"
+      ]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "// O(n²): 모든 쌍을 비교\nfunction hasDuplicate(arr) {\n  for (let i = 0; i < arr.length; i++)\n    for (let j = i + 1; j < arr.length; j++)\n      if (arr[i] === arr[j]) return true;\n  return false;\n}\n\n// O(n): Set으로 한 번만 순회\nconst hasDuplicateFast = (arr) => new Set(arr).size !== arr.length;",
+      "py": "# O(n²): 모든 쌍을 비교\ndef has_duplicate(arr):\n    for i in range(len(arr)):\n        for j in range(i + 1, len(arr)):\n            if arr[i] == arr[j]:\n                return True\n    return False\n\n# O(n): set으로 한 번만 순회\ndef has_duplicate_fast(arr):\n    return len(set(arr)) != len(arr)"
+    },
+    "output": {
+      "js": [],
+      "py": []
+    },
+    "explain": "n이 10,000이면 첫 번째는 최대 약 5천만 번, 두 번째는 약 1만 번 연산합니다. 대신 Set을 만드는 만큼 메모리를 더 쓰는데, 이게 시간과 공간의 트레이드오프예요.",
+    "note": {
+      "py": "파이썬의 x in list는 O(n), x in set과 x in dict는 평균 O(1)입니다. 코딩 테스트에서 가장 자주 하는 실수 중 하나예요."
+    }
+  },
+  "quiz": [
+    {
+      "q": "이 코드의 시간복잡도는?",
+      "code": {
+        "js": "for (let i = 0; i < n; i++)\n  for (let j = 0; j < n; j++) sum++;\nfor (let k = 0; k < n; k++) sum++;",
+        "py": "for i in range(n):\n    for j in range(n):\n        total += 1\nfor k in range(n):\n    total += 1"
+      },
+      "options": [
+        "O(n³)",
+        "O(n² + n)",
+        "O(n²)",
+        "O(n)"
+      ],
+      "answer": 2,
+      "explain": "n² + n에서 최고차항만 남겨 O(n²)입니다."
+    },
+    {
+      "q": "반복문 안에서 배열에 값이 있는지 확인하면? (JS의 arr.includes(x), Python의 x in list)",
+      "options": [
+        "O(n)",
+        "O(1)",
+        "O(log n)",
+        "O(n²)"
+      ],
+      "answer": 3,
+      "explain": "includes는 내부적으로 배열을 순회하는 O(n) 연산입니다. 반복문 n번 안에서 부르면 O(n²)이 돼요."
+    }
+  ],
+  "interview": {
+    "q": "시간복잡도가 무엇인지 설명하고, 코드의 복잡도를 줄여본 경험이 있다면 말해 주세요.",
+    "followups": [
+      "최악과 평균 시간복잡도는 어떻게 다른가요?",
+      "시간을 줄이려고 공간을 더 쓴 예시가 있나요?"
+    ],
+    "model": "시간복잡도는 입력 크기가 커질 때 알고리즘의 연산 횟수가 얼마나 증가하는지를 나타내는 지표로, 보통 빅오 표기법으로 최고차항만 남겨 표현합니다. 예를 들어 이중 반복문은 O(n²), 한 번 순회는 O(n)입니다. 프로젝트에서 두 배열을 비교할 때 filter 안에서 includes를 써서 O(n²)이 된 코드를, 한쪽을 Set으로 바꿔 조회를 O(1)로 만들어 전체를 O(n)으로 줄인 경험이 있습니다.",
+    "keywords": [
+      {
+        "label": "입력 크기에 따른 증가율",
+        "match": [
+          "입력",
+          "증가",
+          "늘어"
+        ]
+      },
+      {
+        "label": "빅오 / 최고차항",
+        "match": [
+          "빅오",
+          "big-o",
+          "big o",
+          "최고차항",
+          "상수"
+        ]
+      },
+      {
+        "label": "복잡도 예시 비교",
+        "match": [
+          "o(n",
+          "o(1",
+          "o(log"
+        ]
+      },
+      {
+        "label": "개선 사례 (Set, Map 등)",
+        "match": [
+          "set",
+          "map",
+          "해시",
+          "개선",
+          "줄"
+        ]
+      }
+    ]
+  },
+  "project": {
+    "scenario": "장바구니에서 '이미 담은 상품' 표시를 할 때 상품 목록이 길어지면 화면이 눈에 띄게 느려진다.",
+    "why": "products.filter(p => cartIds.includes(p.id))처럼 반복문 안에서 배열을 다시 순회해 O(n×m)이 됩니다.",
+    "fixes": [
+      [
+        "Set으로 변환",
+        "const cartSet = new Set(cartIds) 후 cartSet.has(p.id)로 O(1) 조회"
+      ],
+      [
+        "한 번만 만들기",
+        "useMemo로 cartIds가 바뀔 때만 Set 생성"
+      ],
+      [
+        "측정",
+        "console.time이나 Profiler로 개선 전후 비교"
+      ]
+    ],
+    "resume": "장바구니 표시 로직의 O(n×m) 배열 비교를 Set 기반 조회로 바꿔 O(n+m)으로 줄이고, 상품 수가 많을 때의 렌더링 지연을 없앴습니다."
+  },
+  "complexity": {
+    "note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.",
+    "items": [
+      {
+        "type": "limit",
+        "problem": "정수 배열에서 합이 0이 되는 두 수가 있는지 확인하세요.",
+        "constraint": "1 ≤ n ≤ 100,000 · 제한 시간 1초",
+        "q": "이 제약에서 통과하려면 풀이의 시간복잡도가 어느 정도여야 할까요?",
+        "options": [
+          "O(n²)이면 충분",
+          "O(n log n) 이하",
+          "O(n³)이면 충분",
+          "O(2ⁿ)이면 충분"
+        ],
+        "answer": 1,
+        "hint": "n² = 100,000²이 몇인지 계산해 보세요.",
+        "explain": "n² = 10¹⁰이라 1초를 크게 넘습니다. n log n ≈ 1.7×10⁶이므로 정렬 후 투 포인터, 또는 해시 셋을 쓴 O(n) 풀이가 필요해요."
+      },
+      {
+        "type": "code",
+        "problem": "다음 코드의 시간복잡도를 판단하세요.",
+        "code": {
+          "js": "let count = 0;\nfor (let i = 0; i < n; i++) {\n  for (let j = 1; j < n; j *= 2) {\n    count++;\n  }\n}",
+          "py": "count = 0\nfor i in range(n):\n    j = 1\n    while j < n:\n        count += 1\n        j *= 2"
+        },
+        "q": "이 코드의 시간복잡도는?",
+        "options": [
+          "O(n log n)",
+          "O(n²)",
+          "O(n)",
+          "O(log n)"
+        ],
+        "answer": 0,
+        "hint": "안쪽 반복은 j가 1씩이 아니라 2배씩 커집니다.",
+        "explain": "바깥 반복 n번 × 안쪽 반복 log₂n번(1, 2, 4, 8, …)이라 O(n log n)입니다. 반복문이 두 겹이라고 항상 O(n²)은 아니에요."
+      }
+    ]
+  }
+}

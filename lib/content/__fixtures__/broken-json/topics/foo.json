@@ -1,0 +1,7 @@
+{
+  "id": "foo",
+  "track": "CS",
+  "level": 1,
+  "title": "깨진 파일"
+  "summary": "쉼표가 빠져서 JSON 파싱에 실패해야 한다"
+}

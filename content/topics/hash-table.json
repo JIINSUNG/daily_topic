@@ -1,0 +1,173 @@
+{
+  "id": "hash-table",
+  "track": "알고리즘",
+  "level": 2,
+  "minutes": 12,
+  "title": "해시 테이블",
+  "summary": "키로 값을 평균 O(1)에 찾는 자료구조",
+  "concept": {
+    "analogy": "이름을 사물함 번호로 바꾸는 규칙(해시 함수)이 있으면, 이름만 듣고 바로 그 사물함을 열 수 있어요. 두 사람이 같은 번호를 받으면(충돌) 한 사물함에 같이 넣고 안에서 이름을 확인합니다.",
+    "definition": "해시 테이블은 키를 ==해시 함수==로 배열 인덱스로 바꿔 저장해, 조회·삽입·삭제를 ==평균 O(1)==에 합니다. 서로 다른 키가 같은 인덱스를 가지는 ==충돌==은 체이닝이나 개방 주소법으로 해결합니다. 자바스크립트의 ==Map==, Set, 객체가 대표적인 예입니다.",
+    "terms": [
+      [
+        "체이닝",
+        "같은 칸에 리스트로 이어 붙이기"
+      ],
+      [
+        "개방 주소법",
+        "빈 칸을 찾아 다른 칸에 저장"
+      ],
+      [
+        "로드 팩터",
+        "칸 대비 저장된 데이터 비율. 높으면 크기 확장"
+      ]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "function twoSum(nums, target) {\n  const seen = new Map();               // 값 → 인덱스\n  for (let i = 0; i < nums.length; i++) {\n    const need = target - nums[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(nums[i], i);\n  }\n}\n\ntwoSum([2, 7, 11, 15], 9);",
+      "py": "def two_sum(nums, target):\n    seen = {}                          # 값 → 인덱스\n    for i, x in enumerate(nums):\n        need = target - x\n        if need in seen:               # dict 조회는 평균 O(1)\n            return [seen[need], i]\n        seen[x] = i\n\ntwo_sum([2, 7, 11, 15], 9)"
+    },
+    "output": {
+      "js": [
+        "[0, 1]"
+      ],
+      "py": [
+        "[0, 1]"
+      ]
+    },
+    "explain": "이중 반복문이면 O(n²)인 문제를, 지나온 값을 Map에 저장해 O(n)으로 풉니다. '찾는 값이 이미 나왔나?'를 O(1)에 확인하는 게 핵심이에요.",
+    "note": {
+      "py": "파이썬의 dict와 set이 해시 테이블입니다. 개수를 셀 땐 collections.Counter를 쓰면 더 간단해요."
+    }
+  },
+  "quiz": [
+    {
+      "q": "충돌이 극단적으로 많아지면 조회 시간은?",
+      "options": [
+        "항상 O(1)이다",
+        "O(log n)이 된다",
+        "O(n²)이 된다",
+        "O(n)까지 느려진다"
+      ],
+      "answer": 3,
+      "explain": "모든 키가 같은 칸에 몰리면 결국 리스트를 처음부터 훑어야 합니다. 그래서 좋은 해시 함수와 적절한 크기 확장이 중요해요."
+    },
+    {
+      "q": "객체 대신 Map을 쓰는 게 좋은 경우는?",
+      "options": [
+        "JSON.stringify로 저장할 때",
+        "키가 고정된 설정값일 때",
+        "프로토타입 메서드를 상속받고 싶을 때",
+        "키가 객체이거나 추가·삭제가 잦을 때"
+      ],
+      "answer": 3,
+      "explain": "Map은 어떤 값이든 키로 쓸 수 있고, 삽입 순서를 보장하며, 잦은 추가·삭제에 최적화되어 있습니다. 반면 JSON으로 바로 직렬화되지는 않아요."
+    }
+  ],
+  "interview": {
+    "q": "해시 테이블의 동작 원리와 충돌을 해결하는 방법을 설명해 주세요.",
+    "followups": [
+      "JavaScript의 Object와 Map은 어떻게 다른가요?",
+      "해시 테이블이 항상 O(1)이 아닌 이유는?"
+    ],
+    "model": "해시 테이블은 키를 해시 함수에 넣어 나온 값을 배열 인덱스로 사용해 데이터를 저장하는 자료구조로, 평균 O(1)에 조회, 삽입, 삭제가 가능합니다. 서로 다른 키가 같은 인덱스를 가지는 충돌이 생기면, 같은 칸에 연결 리스트로 이어 붙이는 체이닝이나 비어 있는 다른 칸을 찾는 개방 주소법으로 해결합니다. 충돌이 많아지면 최악 O(n)까지 느려질 수 있어 데이터가 일정 비율 이상 차면 테이블 크기를 늘립니다.",
+    "keywords": [
+      {
+        "label": "해시 함수 → 인덱스",
+        "match": [
+          "해시 함수",
+          "인덱스"
+        ]
+      },
+      {
+        "label": "평균 O(1)",
+        "match": [
+          "o(1"
+        ]
+      },
+      {
+        "label": "충돌",
+        "match": [
+          "충돌",
+          "collision"
+        ]
+      },
+      {
+        "label": "체이닝 / 개방 주소법",
+        "match": [
+          "체이닝",
+          "chaining",
+          "개방",
+          "open addressing"
+        ]
+      },
+      {
+        "label": "최악 O(n) / 크기 확장",
+        "match": [
+          "o(n",
+          "확장",
+          "리사이즈",
+          "로드"
+        ]
+      }
+    ]
+  },
+  "project": {
+    "scenario": "채팅 목록에서 메시지마다 users.find(u => u.id === msg.userId)로 작성자를 찾았더니 메시지가 쌓일수록 느려진다.",
+    "why": "메시지 m개마다 사용자 n명을 순회해 O(n×m)이 됩니다.",
+    "fixes": [
+      [
+        "id로 Map 만들기",
+        "new Map(users.map(u => [u.id, u]))로 한 번 변환 후 O(1) 조회"
+      ],
+      [
+        "상태 정규화",
+        "byId와 allIds로 나눠 저장하는 패턴 적용"
+      ],
+      [
+        "useMemo",
+        "users가 바뀔 때만 Map을 다시 생성"
+      ]
+    ],
+    "resume": "채팅 메시지 렌더링 시 반복되던 배열 탐색을 id 기반 Map으로 정규화해 작성자 조회를 O(1)로 바꾸고, 긴 대화방에서의 렌더링 지연을 해결했습니다."
+  },
+  "complexity": {
+    "note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.",
+    "items": [
+      {
+        "type": "limit",
+        "problem": "단어 목록에서 가장 많이 나온 단어를 찾으세요.",
+        "constraint": "n ≤ 200,000 · 제한 시간 1초",
+        "q": "통과할 수 있는 접근은?",
+        "options": [
+          "단어마다 목록 전체를 다시 세기",
+          "두 단어씩 모든 쌍 비교하기",
+          "해시 맵에 등장 횟수 세기",
+          "모든 부분집합 확인하기"
+        ],
+        "answer": 2,
+        "hint": "각 접근의 시간복잡도를 먼저 적어 보세요.",
+        "explain": "해시 맵으로 세면 한 번 순회 O(n)입니다. 단어마다 다시 세거나 모든 쌍을 비교하면 O(n²) = 4×10¹⁰이라 시간 초과예요."
+      },
+      {
+        "type": "code",
+        "problem": "애너그램(글자 구성이 같은 단어)끼리 묶는 코드입니다. 단어는 n개, 각 단어의 최대 길이는 k입니다.",
+        "code": {
+          "js": "function groupAnagrams(words) {\n  const groups = new Map();\n  for (const w of words) {\n    const key = [...w].sort().join('');   // 글자 정렬\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(w);\n  }\n  return [...groups.values()];\n}",
+          "py": "from collections import defaultdict\n\ndef group_anagrams(words):\n    groups = defaultdict(list)\n    for w in words:\n        key = ''.join(sorted(w))          # 글자 정렬\n        groups[key].append(w)\n    return list(groups.values())"
+        },
+        "q": "전체 시간복잡도는?",
+        "options": [
+          "O(n)",
+          "O(n · k log k)",
+          "O(n²)",
+          "O(k log k)"
+        ],
+        "answer": 1,
+        "hint": "해시 맵 조회는 O(1)이지만, 키를 만드는 데 드는 비용도 있어요.",
+        "explain": "단어 n개마다 길이 k인 문자열을 정렬하므로 O(n · k log k)입니다. 해시 맵 조회만 보고 O(n)이라고 답하기 쉬운데, 키를 만드는 비용까지 세야 해요."
+      }
+    ]
+  }
+}

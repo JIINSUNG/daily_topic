@@ -1,0 +1,386 @@
+<title>하루 한 토픽</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: study desk — topic queue rail on the left, one index card with six tabbed steps on the right; highlighter yellow marks keywords */
+:root{
+  --paper:#F2F5F8; --surface:#FFFFFF; --ink:#16202C; --muted:#5A6676; --line:#D8DEE6;
+  --accent:#2B50D6; --accent-soft:#E6ECFF; --hl:#FFE36A; --hl-ink:#16202C;
+  --good:#1D7F55; --good-soft:#E2F3EA; --warn:#B86E00; --warn-soft:#FBF0DC; --bad:#BC3B35; --bad-soft:#F9E3E1;
+  --code-bg:#0F1722; --code-ink:#DCE6F2;
+  --f-display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0E131A; --surface:#161D27; --ink:#E5EAF1; --muted:#95A2B2; --line:#283341;
+  --accent:#8AA4FF; --accent-soft:#1E2A4D; --hl:#5E4F10; --hl-ink:#FFF3C4;
+  --good:#5CC796; --good-soft:#15302A; --warn:#E3A84A; --warn-soft:#33270F; --bad:#F08A84; --bad-soft:#3A1C1B;
+  --code-bg:#0A0F15; --code-ink:#DCE6F2; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E131A; --surface:#161D27; --ink:#E5EAF1; --muted:#95A2B2; --line:#283341;
+  --accent:#8AA4FF; --accent-soft:#1E2A4D; --hl:#5E4F10; --hl-ink:#FFF3C4;
+  --good:#5CC796; --good-soft:#15302A; --warn:#E3A84A; --warn-soft:#33270F; --bad:#F08A84; --bad-soft:#3A1C1B;
+  --code-bg:#0A0F15; --code-ink:#DCE6F2; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand h1{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1.1;margin:0;letter-spacing:.01em}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 12px;display:flex;flex-direction:column;min-width:84px}
+.stat b{font-size:18px;font-variant-numeric:tabular-nums;line-height:1.3}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.04em}
+
+.grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+aside{display:flex;flex-direction:column;gap:16px}
+.rail-sec h2{font-size:11px;letter-spacing:.12em;color:var(--muted);margin:0 0 8px;font-weight:700}
+.tlist{display:flex;flex-direction:column;gap:6px}
+.titem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:10px;padding:8px 10px}
+.titem:hover{background:var(--surface);border-color:var(--line)}
+.titem.on{background:var(--surface);border-color:var(--accent)}
+.titem .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--muted)}
+.titem .dot.done{background:var(--good);border-color:var(--good)}
+.titem .dot.part{border-color:var(--accent);background:linear-gradient(90deg,var(--accent) 50%,transparent 50%)}
+.titem .nm{font-weight:500;line-height:1.35}
+.titem .nm small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.due{font-size:11px;padding:2px 7px;border-radius:99px;background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+.empty{color:var(--muted);font-size:13px;padding:4px 10px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card-head{padding:20px 22px 0;display:flex;flex-direction:column;gap:6px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.chip.lv{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:700}
+.card-head h2{font-family:var(--f-display);font-weight:400;font-size:34px;line-height:1.15;margin:4px 0 0;text-wrap:balance}
+.card-head .sub{color:var(--muted);margin:0}
+
+.steps{display:flex;gap:2px;padding:16px 22px 0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{background:none;border:0;border-bottom:3px solid transparent;padding:8px 10px 10px;display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--muted);font-weight:500}
+.step .n{font-family:var(--f-mono);font-size:11px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line)}
+.step.seen .n{background:var(--good-soft);color:var(--good);border-color:transparent}
+.step.on{color:var(--ink);border-bottom-color:var(--accent)}
+.step.on .n{background:var(--accent);color:var(--surface);border-color:transparent}
+
+.body{padding:22px;display:flex;flex-direction:column;gap:18px;min-height:340px}
+.body h3{margin:0;font-size:13px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.prose{max-width:66ch;margin:0}
+.analogy{border-left:3px solid var(--hl);padding:4px 0 4px 14px;max-width:66ch}
+.analogy p{margin:0}
+mark{background:var(--hl);color:var(--hl-ink);padding:0 3px;border-radius:3px}
+.terms{display:flex;flex-wrap:wrap;gap:6px}
+.term{font-size:13px;padding:4px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.term b{margin-right:6px}
+
+.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--f-mono);font-size:13px;line-height:1.7;border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0;white-space:pre}
+.code .c{color:#7F8EA3}
+.out{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--f-mono);font-size:13px}
+.out span{padding:3px 10px;border-radius:6px;background:var(--paper);border:1px solid var(--line)}
+
+.q{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--line);border-radius:12px}
+.q-title{font-weight:700;margin:0}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.opts{grid-template-columns:minmax(0,1fr)}}
+.opt{text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:700}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.explain{font-size:14px;color:var(--muted);margin:0}
+
+.iq{font-size:20px;font-weight:700;line-height:1.45;margin:0;max-width:60ch;text-wrap:balance}
+.follow{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.follow li{padding:8px 12px;border-radius:8px;background:var(--paper);font-size:14px}
+.follow li::before{content:"꼬리 ↳ ";color:var(--accent);font-weight:700}
+.reveal{background:none;border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted);text-align:left}
+.reveal:hover{border-color:var(--accent);color:var(--accent)}
+.model{padding:14px 16px;border-radius:10px;background:var(--accent-soft);max-width:72ch}
+.model p{margin:0}
+
+textarea{width:100%;min-height:150px;resize:vertical;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;line-height:1.6}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{padding:9px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:disabled{opacity:.45;cursor:default}
+.kw{display:flex;flex-direction:column;gap:6px}
+.kw div{display:flex;gap:10px;align-items:center;font-size:14px}
+.kw .ok{color:var(--good);font-weight:700}
+.kw .no{color:var(--bad)}
+.score{font-weight:700}
+.rate{display:flex;gap:8px;flex-wrap:wrap}
+.rate button{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.rate button.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.note{font-size:13px;color:var(--muted);margin:0}
+
+.scen{padding:14px 16px;border-radius:10px;background:var(--warn-soft);color:var(--ink);max-width:72ch}
+.scen b{color:var(--warn)}
+.fix{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.fix li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+.fix li i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--accent);padding-top:3px}
+.resume{padding:14px 16px;border:1px solid var(--line);border-radius:10px;max-width:72ch}
+.resume p{margin:4px 0 0}
+
+.foot{display:flex;justify-content:space-between;gap:8px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+.toggle{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:0}
+#schema{margin-top:0}
+@media (prefers-reduced-motion:no-preference){.body>*{animation:rise .25s ease both}@keyframes rise{from{opacity:.4;transform:translateY(4px)}}}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.filters button{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted)}
+.filters button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.track-head{font-size:12px;color:var(--muted);margin:10px 10px 2px;font-weight:700}
+
+.codewrap{display:flex;flex-direction:column;gap:0;min-width:0}
+.codebar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.lang button{border:0;background:transparent;padding:5px 12px;font-size:13px;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--surface);font-weight:700}
+.only{font-size:12px;color:var(--muted)}
+.code-label{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.tip{padding:10px 14px;border-radius:10px;background:var(--paper);font-size:14px;max-width:72ch}
+.tip b{color:var(--accent)}
+
+.rule{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.rule-t{overflow-x:auto}
+.rule table{border-collapse:collapse;font-size:13px;min-width:420px;width:100%}
+.rule th,.rule td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.rule th{color:var(--muted);font-weight:500;font-size:12px}
+.rule td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.rule td:last-child{font-family:var(--f-body);color:var(--muted)}
+.cx-kind{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--hl);color:var(--hl-ink);align-self:flex-start}
+.constraint{font-family:var(--f-mono);font-size:13px;padding:8px 12px;border-radius:8px;background:var(--paper);border:1px dashed var(--line)}
+.hintbtn{align-self:flex-start;background:none;border:0;padding:0;color:var(--accent);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.hint{font-size:14px;margin:0;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>하루 한 토픽</h1>
+      <p>개념 → 응용 → 문제 → 면접 → 내 답변 → 프로젝트, 하루 15분</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="sStreak">0일</b><span>연속 학습</span></div>
+      <div class="stat"><b id="sDone">0/0</b><span>완료 토픽</span></div>
+      <div class="stat"><b id="sDue">0</b><span>오늘 복습</span></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside>
+      <div class="rail-sec"><h2>오늘 복습할 토픽</h2><div class="tlist" id="dueList"></div></div>
+      <div class="rail-sec"><h2>전체 토픽</h2><div class="filters" id="filters"></div><div class="tlist" id="allList"></div></div>
+    </aside>
+
+    <main class="card" id="card">
+      <div class="card-head">
+        <div class="meta" id="meta"></div>
+        <h2 id="title"></h2>
+        <p class="sub" id="sub"></p>
+      </div>
+      <nav class="steps" id="steps" aria-label="학습 단계"></nav>
+      <section class="body" id="body"></section>
+      <div class="foot">
+        <button class="toggle" id="schemaBtn">이 토픽의 JSON 데이터 보기</button>
+        <div class="row">
+          <button class="btn" id="prev">이전</button>
+          <button class="btn primary" id="next">다음 단계</button>
+        </div>
+      </div>
+      <div class="body" id="schemaBox" hidden><h3>토픽 데이터 (content/topics/*.json)</h3><pre class="code" id="schema"></pre></div>
+    </main>
+  </div>
+</div>
+
+<script>
+const LEVELS = {1:"Lv.1 입문",2:"Lv.2 기본",3:"Lv.3 면접",4:"Lv.4 심화"};
+const TRACKS = ["프론트엔드","CS","알고리즘"];
+const TOPICS = [{"id": "event-loop", "track": "프론트엔드", "level": 3, "minutes": 15, "title": "이벤트 루프", "summary": "싱글 스레드 자바스크립트가 비동기를 처리하는 방법", "concept": {"analogy": "카페에 직원이 한 명(콜스택)뿐입니다. 커피 추출처럼 오래 걸리는 일은 기계(Web API)에 맡기고, 끝난 주문은 픽업 대기열(태스크 큐)에 올라옵니다. 직원은 손이 비었을 때만 대기열을 보는데, 단골 전용 대기열(마이크로태스크 큐)을 항상 먼저 처리해요.", "definition": "자바스크립트는 <mark>콜스택<\/mark> 하나에서 코드를 한 줄씩 실행합니다. 타이머나 네트워크 같은 비동기 작업은 브라우저의 Web API가 처리하고, 완료되면 콜백이 큐에 들어갑니다. <mark>이벤트 루프<\/mark>는 콜스택이 비면 <mark>마이크로태스크 큐<\/mark>를 모두 비운 뒤, <mark>태스크 큐<\/mark>에서 하나를 꺼내 실행하는 과정을 반복합니다.", "terms": [["콜스택", "지금 실행 중인 함수들의 쌓임"], ["태스크 큐", "setTimeout, 이벤트 콜백"], ["마이크로태스크 큐", "Promise.then, queueMicrotask"], ["렌더링", "태스크 사이에 화면을 다시 그림"]]}, "apply": {"code": {"js": "console.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');"}, "output": {"js": ["A", "D", "C", "B"]}, "explain": "동기 코드 A, D가 먼저 끝나 콜스택이 빕니다. 이벤트 루프는 마이크로태스크(C)를 먼저 처리하고, 그다음 태스크(B)를 꺼냅니다. setTimeout의 0ms는 '즉시'가 아니라 '최소 0ms 뒤 큐에 넣기'라는 뜻이에요."}, "quiz": [{"q": "콘솔 출력 순서는?", "code": {"js": "setTimeout(() => console.log(1));\nPromise.resolve().then(() => {\n  console.log(2);\n  setTimeout(() => console.log(3));\n});\nconsole.log(4);"}, "options": ["4 2 1 3", "4 1 2 3", "2 4 1 3", "4 2 3 1"], "answer": 0, "explain": "동기 4 → 마이크로태스크 2 (여기서 3의 타이머 등록) → 먼저 등록된 태스크 1 → 나중에 등록된 태스크 3 순서입니다."}, {"q": "마이크로태스크 큐에 들어가는 것은?", "options": ["setTimeout 콜백", "Promise.then 콜백", "click 이벤트 핸들러", "setInterval 콜백"], "answer": 1, "explain": "Promise의 then/catch/finally, queueMicrotask, MutationObserver가 마이크로태스크입니다. 나머지는 태스크(매크로태스크)예요."}], "interview": {"q": "자바스크립트는 싱글 스레드인데 어떻게 비동기 처리가 가능한지 이벤트 루프로 설명해 주세요.", "followups": ["마이크로태스크와 태스크의 실행 순서 차이는 무엇인가요?", "setTimeout(fn, 0)이 바로 실행되지 않는 이유는?", "무거운 동기 연산이 화면을 멈추게 하는 이유는?"], "model": "자바스크립트 엔진은 콜스택이 하나인 싱글 스레드라서 한 번에 하나의 작업만 실행합니다. 대신 타이머, 네트워크 요청 같은 비동기 작업은 브라우저의 Web API가 처리하고, 완료되면 콜백을 큐에 넣습니다. 이벤트 루프는 콜스택이 비었는지 계속 확인하다가, 비면 먼저 마이크로태스크 큐(Promise 콜백 등)를 모두 비우고, 그다음 태스크 큐에서 하나를 꺼내 실행합니다. 렌더링도 태스크 사이에 일어나기 때문에, 오래 걸리는 동기 코드가 콜스택을 점유하면 화면 갱신과 입력 처리가 멈춥니다.", "keywords": [{"label": "싱글 스레드 / 콜스택", "match": ["싱글", "단일", "콜스택", "call stack"]}, {"label": "Web API가 비동기 처리", "match": ["web api", "웹 api", "브라우저"]}, {"label": "태스크 큐", "match": ["태스크 큐", "콜백 큐", "task queue", "매크로"]}, {"label": "마이크로태스크 우선", "match": ["마이크로", "micro"]}, {"label": "콜스택이 비면 꺼내 실행", "match": ["비면", "비었", "비어"]}]}, "project": {"scenario": "상품 10만 개를 검색창 입력마다 필터링했더니 글자를 칠 때마다 입력이 버벅인다.", "why": "필터링이 동기로 콜스택을 오래 점유해서 이벤트 루프가 렌더링과 입력 이벤트를 처리하지 못합니다.", "fixes": [["debounce", "입력이 멈춘 뒤 300ms 후에 한 번만 필터링"], ["작업 쪼개기", "큰 배열을 청크로 나눠 setTimeout으로 순서대로 처리"], ["Web Worker", "필터링을 별도 스레드로 옮겨 메인 스레드를 비움"], ["React", "useDeferredValue / startTransition으로 입력 갱신을 우선 처리"]], "resume": "검색 필터링이 메인 스레드를 막아 입력 지연이 생기는 원인을 이벤트 루프 관점에서 분석하고, debounce와 useDeferredValue를 적용해 입력 지연을 해소했습니다."}}, {"id": "closure", "track": "프론트엔드", "level": 2, "minutes": 12, "title": "클로저", "summary": "함수가 태어난 곳의 변수를 기억하는 원리", "concept": {"analogy": "함수는 태어난 집의 물건을 가방에 챙겨서 떠납니다. 집(외부 함수)이 철거돼도 가방 속 물건(외부 변수)은 계속 꺼내 쓸 수 있어요.", "definition": "<mark>클로저<\/mark>는 함수와 그 함수가 선언될 때의 <mark>렉시컬 환경<\/mark>의 조합입니다. 외부 함수 실행이 끝나도, 안쪽 함수가 참조하는 <mark>외부 변수<\/mark>는 사라지지 않고 계속 접근할 수 있습니다.", "terms": [["렉시컬 스코프", "호출 위치가 아니라 선언 위치로 스코프 결정"], ["정보 은닉", "밖에서 직접 바꿀 수 없는 변수"], ["stale closure", "예전 값을 기억한 채 갱신 안 되는 클로저"]]}, "apply": {"code": {"js": "function makeCounter() {\n  let count = 0;          // 밖에서 접근 불가\n  return () => ++count;   // count를 기억하는 클로저\n}\n\nconst next = makeCounter();\nnext(); next();\nconsole.log(next());", "py": "def make_counter():\n    count = 0                  # 밖에서 접근 불가\n    def next_():\n        nonlocal count         # 바깥 변수를 바꾸려면 nonlocal 선언\n        count += 1\n        return count\n    return next_               # count를 기억하는 클로저\n\nnext_ = make_counter()\nnext_(); next_()\nprint(next_())"}, "output": {"js": ["3"], "py": ["3"]}, "explain": "makeCounter 실행은 끝났지만 반환된 함수가 count를 참조하고 있어서 값이 유지됩니다. count는 반환된 함수로만 바꿀 수 있으니 정보 은닉도 됩니다.", "note": {"py": "파이썬은 바깥 함수의 변수를 읽기만 할 땐 그냥 쓰면 되지만, 값을 바꾸려면 nonlocal 선언이 필요해요."}}, "quiz": [{"q": "출력 결과는?", "code": {"js": "for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i));\n}"}, "options": ["0 1 2", "3 3 3", "0 0 0", "undefined ×3"], "answer": 1, "explain": "var는 함수 스코프라 세 콜백이 같은 i 하나를 공유합니다. 콜백이 실행될 땐 루프가 끝나 i가 3이에요. let으로 바꾸면 반복마다 새 바인딩이 생겨 0 1 2가 됩니다."}, {"q": "클로저 활용 사례가 아닌 것은?", "options": ["private 변수 만들기", "debounce 함수 구현", "커링(부분 적용)", "CSS flex로 가운데 정렬"], "answer": 3, "explain": "CSS 레이아웃은 자바스크립트 스코프와 관계가 없습니다."}], "interview": {"q": "클로저가 무엇인지 설명하고, 실제로 활용하거나 문제를 겪었던 경험을 말해 주세요.", "followups": ["클로저 때문에 메모리 누수가 생길 수 있나요?", "React에서 stale closure를 겪은 적이 있나요?"], "model": "클로저는 함수가 선언될 때의 렉시컬 환경을 기억해서, 외부 함수 실행이 끝난 뒤에도 외부 변수에 접근할 수 있는 현상입니다. 외부에서 직접 바꿀 수 없는 변수를 만들어 정보 은닉에 쓰거나, debounce처럼 타이머 id를 기억해야 하는 함수를 만들 때 활용합니다. React에서는 useEffect 안의 setInterval이 처음 렌더링의 state를 기억해 값이 갱신되지 않는 stale closure 문제를 겪었고, 함수형 업데이트나 useRef로 해결했습니다.", "keywords": [{"label": "렉시컬 환경 / 선언 위치", "match": ["렉시컬", "선언"]}, {"label": "외부 함수 종료 후에도 접근", "match": ["끝난", "종료", "외부 변수"]}, {"label": "정보 은닉 / private", "match": ["은닉", "private", "캡슐화"]}, {"label": "실무 사례 (debounce, hooks 등)", "match": ["debounce", "디바운스", "hook", "useeffect", "usestate", "이벤트 핸들러"]}]}, "project": {"scenario": "useEffect 안에서 setInterval로 1초마다 setCount(count + 1)을 했는데 화면이 1에서 멈춘다.", "why": "effect가 처음 렌더링 때 한 번만 실행되어, 콜백이 count = 0을 기억하는 클로저가 됐기 때문입니다.", "fixes": [["함수형 업데이트", "setCount(c => c + 1)로 이전 값을 인자로 받기"], ["useRef", "최신 값을 ref.current에 담아 참조"], ["의존성 배열", "count를 의존성에 넣고 매번 interval 재설정 (비효율적)"]], "resume": "타이머 기능에서 발생한 stale closure 버그의 원인을 클로저 관점에서 파악하고, 함수형 업데이트로 고쳐 불필요한 interval 재생성을 없앴습니다."}}, {"id": "browser-rendering", "track": "프론트엔드", "level": 3, "minutes": 15, "title": "브라우저 렌더링 과정", "summary": "HTML이 화면의 픽셀이 되기까지", "concept": {"analogy": "건물을 짓는 순서와 같아요. 설계도(HTML)로 뼈대(DOM)를 세우고, 인테리어 지침(CSS)을 정리(CSSOM)한 뒤, 둘을 합쳐 시공도(렌더 트리)를 만듭니다. 치수를 재고(레이아웃), 칠하고(페인트), 층을 겹쳐 완성(합성)합니다.", "definition": "브라우저는 HTML을 파싱해 <mark>DOM<\/mark>을, CSS를 파싱해 <mark>CSSOM<\/mark>을 만들고, 둘을 합쳐 화면에 보일 요소만 담은 <mark>렌더 트리<\/mark>를 만듭니다. 이어서 <mark>레이아웃<\/mark>(리플로우)에서 위치와 크기를 계산하고, <mark>페인트<\/mark>로 픽셀을 칠한 뒤, 레이어를 <mark>합성<\/mark>해 화면에 표시합니다. width 같은 속성을 바꾸면 레이아웃부터, color는 페인트부터, transform과 opacity는 합성 단계만 다시 실행됩니다.", "terms": [["리플로우", "레이아웃 재계산. 비용이 가장 큼"], ["리페인트", "색·그림자 등 다시 칠하기"], ["합성", "레이어를 GPU로 겹치기"], ["렌더 블로킹", "CSS와 동기 script가 첫 화면을 늦춤"]]}, "apply": {"code": {"js": "// 나쁜 예: 읽기와 쓰기를 번갈아 하면 매번 레이아웃이 다시 계산됨\nfor (const el of items) {\n  el.style.width = box.offsetWidth + 'px';\n}\n\n// 좋은 예: 한 번 읽고, 쓰기는 몰아서\nconst w = box.offsetWidth;\nfor (const el of items) {\n  el.style.width = w + 'px';\n}"}, "output": {"js": []}, "explain": "offsetWidth를 읽으면 브라우저는 정확한 값을 주려고 미뤄둔 레이아웃을 즉시 계산합니다. 루프 안에서 읽기와 쓰기를 섞으면 매 반복마다 강제 레이아웃이 일어나는데, 이를 레이아웃 스래싱이라고 해요."}, "quiz": [{"q": "레이아웃(리플로우)을 일으키지 않는 CSS 변경은?", "options": ["width", "margin", "transform", "font-size"], "answer": 2, "explain": "transform은 합성 단계에서 처리되어 레이아웃과 페인트를 건너뜁니다. 그래서 애니메이션에는 transform과 opacity를 쓰는 게 좋아요."}, {"q": "head 안에 defer나 async 없는 script 태그가 있으면?", "options": ["HTML 파싱이 멈춘다", "CSS가 무시된다", "이미지가 먼저 로드된다", "아무 영향이 없다"], "answer": 0, "explain": "동기 스크립트는 DOM을 바꿀 수 있어서, 브라우저는 다운로드와 실행이 끝날 때까지 HTML 파싱을 멈춥니다. defer를 쓰면 파싱이 끝난 뒤에 실행됩니다."}], "interview": {"q": "브라우저가 HTML을 받아 화면에 그리기까지의 과정을 설명해 주세요.", "followups": ["리플로우와 리페인트의 차이, 그리고 줄이는 방법은?", "script의 async와 defer는 어떻게 다른가요?"], "model": "브라우저는 HTML을 파싱해 DOM 트리를, CSS를 파싱해 CSSOM 트리를 만듭니다. 둘을 결합해 실제로 화면에 보일 요소만 담은 렌더 트리를 만들고, 레이아웃 단계에서 각 요소의 위치와 크기를 계산합니다. 그다음 페인트 단계에서 픽셀을 그리고, 여러 레이어를 합성해 화면에 표시합니다. 이후 DOM이나 스타일이 바뀌면 바뀐 속성에 따라 레이아웃부터 다시 하거나 페인트, 합성만 다시 하기 때문에 애니메이션에는 transform과 opacity를 쓰는 것이 유리합니다.", "keywords": [{"label": "DOM / CSSOM 생성", "match": ["dom", "cssom"]}, {"label": "렌더 트리", "match": ["렌더 트리", "렌더트리", "render tree"]}, {"label": "레이아웃 (리플로우)", "match": ["레이아웃", "리플로우", "reflow"]}, {"label": "페인트", "match": ["페인트", "paint", "리페인트"]}, {"label": "합성 (composite)", "match": ["합성", "composit", "레이어"]}]}, "project": {"scenario": "사이드 메뉴가 열리는 애니메이션을 left 값으로 만들었더니 모바일에서 뚝뚝 끊긴다.", "why": "left가 바뀔 때마다 매 프레임 레이아웃과 페인트를 다시 계산해서 16ms 안에 프레임을 그리지 못합니다.", "fixes": [["transform", "left 대신 transform: translateX()로 이동해 합성 단계만 실행"], ["will-change", "애니메이션 직전에만 지정해 레이어를 미리 분리 (남용 금지)"], ["측정", "개발자 도구 Performance 탭에서 Layout, Paint 구간 확인"]], "resume": "모바일 메뉴 애니메이션의 끊김 원인을 브라우저 렌더링 단계로 분석하고, left 기반 애니메이션을 transform으로 바꿔 레이아웃 재계산을 없앴습니다."}}, {"id": "react-rerender", "track": "프론트엔드", "level": 3, "minutes": 15, "title": "React 리렌더링", "summary": "컴포넌트가 다시 그려지는 조건과 줄이는 방법", "concept": {"analogy": "반장(부모)이 바뀌면 반 전체가 다시 출석을 부릅니다. React.memo는 학생에게 '내 정보가 그대로면 출석 생략' 명찰을 달아주는 것이고, useCallback은 매번 새 명찰을 만들지 않고 같은 명찰을 재사용하는 거예요.", "definition": "컴포넌트는 <mark>state 변경<\/mark>, <mark>부모 리렌더<\/mark>, 구독 중인 <mark>context 변경<\/mark> 때 다시 렌더링됩니다. React는 새 렌더 결과를 이전과 비교(재조정)해 바뀐 부분만 실제 DOM에 반영합니다. <mark>React.memo<\/mark>는 props를 얕은 비교해 같으면 렌더링을 건너뛰고, useMemo와 useCallback은 값과 함수의 참조를 유지합니다.", "terms": [["재조정", "이전 결과와 비교해 바뀐 부분 찾기"], ["얕은 비교", "객체 내용이 아니라 참조가 같은지 비교"], ["key", "리스트에서 같은 항목인지 구분하는 값"]]}, "apply": {"code": {"js": "const List = React.memo(function List({ onSelect }) {\n  /* 큰 목록 렌더링 */\n});\n\nfunction Page() {\n  const [query, setQuery] = useState('');\n  const onSelect = () => {};        // 렌더마다 새 함수 → memo가 무력화\n  return <List onSelect={onSelect} />;\n}\n\n// 해결: 함수 참조를 유지\nconst onSelect = useCallback(() => {}, []);"}, "output": {"js": []}, "explain": "query가 바뀌어 Page가 렌더링될 때마다 onSelect는 새 함수가 됩니다. 얕은 비교에서 이전 함수와 다르다고 판단하니 memo로 감싼 List도 리렌더링돼요. useCallback으로 같은 참조를 유지해야 memo가 효과를 냅니다."}, "quiz": [{"q": "React.memo로 감싼 Child에 style={{ color: 'red' }}를 넘기면, 부모가 리렌더될 때 Child는?", "options": ["리렌더된다", "리렌더되지 않는다", "에러가 난다", "style만 갱신된다"], "answer": 0, "explain": "렌더마다 새 객체 리터럴이 만들어져 참조가 달라집니다. 상수로 빼거나 useMemo로 고정해야 합니다."}, {"q": "리렌더링의 원인이 아닌 것은?", "options": ["setState 호출", "부모 컴포넌트 리렌더", "구독 중인 context 값 변경", "useRef의 current 변경"], "answer": 3, "explain": "ref.current는 바꿔도 리렌더링을 일으키지 않습니다. 그래서 화면에 보이지 않는 값을 저장할 때 씁니다."}], "interview": {"q": "React 컴포넌트가 리렌더링되는 조건과, 불필요한 리렌더링을 줄여본 경험을 말해 주세요.", "followups": ["useMemo를 모든 곳에 쓰면 안 되는 이유는?", "리스트에서 key로 index를 쓰면 어떤 문제가 있나요?"], "model": "컴포넌트는 자신의 state가 바뀌거나, 부모가 리렌더링되거나, 구독한 context 값이 바뀔 때 다시 렌더링됩니다. 불필요한 리렌더링을 줄일 때는 먼저 React DevTools Profiler로 실제로 느린 컴포넌트를 찾습니다. 그다음 state를 필요한 컴포넌트로 내려 영향 범위를 줄이고, 무거운 자식은 React.memo로 감싸면서 넘기는 함수와 객체는 useCallback, useMemo로 참조를 유지했습니다. 메모이제이션도 비교 비용이 있어서 측정 결과를 보고 필요한 곳에만 적용했습니다.", "keywords": [{"label": "state / props / 부모 리렌더", "match": ["state", "부모", "상태"]}, {"label": "context 변경", "match": ["context", "컨텍스트"]}, {"label": "React.memo / 얕은 비교", "match": ["memo", "얕은"]}, {"label": "useCallback / useMemo 참조 유지", "match": ["usecallback", "usememo", "참조"]}, {"label": "측정 (Profiler)", "match": ["profiler", "프로파일러", "측정", "devtools"]}]}, "project": {"scenario": "검색어를 한 글자 입력할 때마다 페이지 전체와 상품 500개 카드가 모두 다시 렌더링된다.", "why": "검색어 state가 페이지 최상단에 있어서, 입력할 때마다 페이지 전체가 리렌더링되고 그 아래 모든 자식도 함께 렌더링됩니다.", "fixes": [["state 내리기", "검색어 state를 검색창 컴포넌트 안으로 옮겨 영향 범위 축소"], ["memo + useCallback", "상품 목록을 React.memo로 감싸고 넘기는 핸들러 참조 유지"], ["측정 먼저", "Profiler로 렌더 시간을 비교해 효과 확인"]], "resume": "검색 입력마다 상품 목록 전체가 리렌더링되던 문제를 Profiler로 찾아, state 위치 조정과 React.memo 적용으로 입력 시 렌더링 범위를 검색창으로 한정했습니다."}}, {"id": "process-thread", "track": "CS", "level": 2, "minutes": 12, "title": "프로세스와 스레드", "summary": "프로그램이 실행되는 단위와 메모리 구조", "concept": {"analogy": "프로세스는 각자 주방을 가진 식당이고, 스레드는 한 주방 안의 요리사들이에요. 요리사들은 도구와 재료(메모리)를 함께 써서 빠르게 협업하지만, 같은 칼을 동시에 잡으면 부딪힙니다.", "definition": "<mark>프로세스<\/mark>는 실행 중인 프로그램으로, 운영체제로부터 코드·데이터·힙·스택으로 이루어진 <mark>독립된 메모리 공간<\/mark>을 받습니다. <mark>스레드<\/mark>는 프로세스 안의 실행 흐름으로, <mark>스택만 따로<\/mark> 갖고 코드·데이터·힙은 공유합니다. 그래서 스레드 간 통신은 빠르지만 같은 자원에 동시에 접근할 때 <mark>동기화<\/mark>가 필요합니다.", "terms": [["컨텍스트 스위칭", "실행 중인 작업을 바꿀 때 상태를 저장·복원하는 비용"], ["경쟁 조건", "실행 순서에 따라 결과가 달라지는 문제"], ["뮤텍스", "한 번에 하나만 자원에 접근하게 하는 잠금"]]}, "apply": {"code": {"js": "// main.js — 메인 스레드\nconst worker = new Worker('worker.js');\nworker.postMessage(bigArray);       // 메모리를 공유하지 않고 복사해서 전달\nworker.onmessage = (e) => render(e.data);\n\n// worker.js — 별도 스레드\nonmessage = (e) => {\n  postMessage(heavySort(e.data));\n};", "py": "from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor\n\ndef heavy(n):                  # CPU를 많이 쓰는 작업\n    return sum(i * i for i in range(n))\n\n# 스레드: 메모리를 공유하지만, GIL 때문에 CPU 작업은 동시에 돌지 못함\nwith ThreadPoolExecutor() as ex:\n    list(ex.map(heavy, [10**7] * 4))\n\n# 프로세스: 메모리가 분리되어 CPU 작업을 진짜 병렬로 실행\nwith ProcessPoolExecutor() as ex:\n    list(ex.map(heavy, [10**7] * 4))"}, "output": {"js": [], "py": []}, "explain": "Web Worker는 브라우저에서 별도 스레드를 쓰는 방법입니다. 메모리를 직접 공유하지 않고 메시지를 복사해 주고받아서 동기화 문제를 피해요. 참고로 크롬은 탭마다 프로세스를 나눠서, 탭 하나가 멈춰도 다른 탭은 안전합니다.", "note": {"py": "기본 CPython은 GIL 때문에 한 번에 한 스레드만 파이썬 코드를 실행합니다. 그래서 계산이 많은 작업은 프로세스, 네트워크나 파일을 기다리는 I/O 작업은 스레드가 유리해요."}}, "quiz": [{"q": "같은 프로세스의 스레드끼리 공유하지 않는 영역은?", "options": ["스택", "힙", "코드", "데이터"], "answer": 0, "explain": "스레드마다 함수 호출 흐름이 다르기 때문에 스택은 각자 가집니다."}, {"q": "크롬이 탭마다 별도 프로세스를 쓰는 주된 이유는?", "options": ["안정성과 보안을 위한 격리", "메모리 절약", "렌더링 속도 향상", "네트워크 대역폭 확보"], "answer": 0, "explain": "프로세스는 메모리가 분리되어 한 탭의 오류나 악성 코드가 다른 탭에 영향을 주기 어렵습니다. 대신 메모리는 더 많이 씁니다."}], "interview": {"q": "프로세스와 스레드의 차이를 설명해 주세요.", "followups": ["멀티스레드 환경에서 생길 수 있는 문제와 해결 방법은?", "멀티프로세스 대신 멀티스레드를 쓰는 이유는?"], "model": "프로세스는 운영체제로부터 자원을 할당받아 실행되는 프로그램 단위로, 각자 독립된 메모리 공간을 가집니다. 스레드는 프로세스 안에서 실행되는 흐름 단위로, 스택은 따로 갖지만 코드, 데이터, 힙 영역은 같은 프로세스의 다른 스레드와 공유합니다. 그래서 스레드는 생성과 컨텍스트 스위칭 비용이 적고 통신이 빠르지만, 공유 자원에 동시에 접근하면 경쟁 조건이 생길 수 있어 뮤텍스 같은 동기화가 필요합니다.", "keywords": [{"label": "프로세스: 독립된 메모리", "match": ["독립", "분리", "격리"]}, {"label": "스레드: 스택만 따로", "match": ["스택"]}, {"label": "힙·데이터 공유", "match": ["공유", "힙"]}, {"label": "동기화 / 경쟁 조건", "match": ["동기화", "경쟁", "race", "뮤텍스", "mutex"]}, {"label": "컨텍스트 스위칭 비용", "match": ["컨텍스트", "context switch", "비용"]}]}, "project": {"scenario": "엑셀 파일을 업로드하면 수만 행을 파싱하는 동안 페이지가 몇 초간 완전히 멈춘다.", "why": "파싱이 메인 스레드에서 실행되어, 같은 스레드를 쓰는 렌더링과 입력 처리가 모두 막힙니다.", "fixes": [["Web Worker", "파싱 로직을 워커 스레드로 옮겨 메인 스레드를 비움"], ["진행률 표시", "워커에서 postMessage로 진행률을 보내 프로그레스 바 갱신"], ["Transferable", "ArrayBuffer를 복사하지 않고 소유권만 넘겨 전달 비용 절감"]], "resume": "대용량 엑셀 파싱 중 화면이 멈추는 문제를 해결하기 위해 파싱을 Web Worker로 분리하고, 진행률을 표시해 업로드 중에도 화면을 조작할 수 있게 했습니다."}}, {"id": "tcp-udp", "track": "CS", "level": 2, "minutes": 10, "title": "TCP와 UDP", "summary": "신뢰성과 속도, 두 가지 전송 방식", "concept": {"analogy": "TCP는 등기우편이에요. 받았다는 확인을 받고, 순서대로 도착하며, 분실되면 다시 보냅니다. UDP는 전단지 배포처럼 빠르게 뿌리지만 누가 받았는지 확인하지 않아요.", "definition": "TCP는 데이터를 보내기 전에 <mark>3-way handshake<\/mark>로 연결을 맺고, 순서 보장과 재전송으로 <mark>신뢰성<\/mark>을 보장합니다. UDP는 연결 없이 데이터를 보내 <mark>빠르고 가볍지만<\/mark> 손실과 순서를 보장하지 않습니다. HTTP/1.1과 HTTP/2는 TCP 위에서, HTTP/3는 UDP 기반의 QUIC 위에서 동작합니다.", "terms": [["3-way handshake", "SYN → SYN+ACK → ACK로 연결 수립"], ["흐름 제어", "받는 쪽이 감당할 만큼만 전송"], ["혼잡 제어", "네트워크가 막히면 전송 속도 조절"]]}, "apply": {"code": "클라이언트 → 서버   SYN         \"연결해도 될까요?\"\n서버 → 클라이언트   SYN + ACK   \"네, 저도 준비됐어요\"\n클라이언트 → 서버   ACK         \"확인했어요\"\n// 연결 수립 완료 → 이제 HTTP 요청을 보냄", "output": [], "explain": "HTTPS라면 이 뒤에 TLS 핸드셰이크까지 더해집니다. 그래서 새 서버에 처음 요청할 땐 실제 데이터를 받기 전에 여러 번 왕복이 필요하고, 이것이 첫 요청이 느린 이유 중 하나예요.", "kind": "flow"}, "quiz": [{"q": "UDP가 더 적합한 서비스는?", "options": ["실시간 화상 통화", "파일 다운로드", "이메일 전송", "계좌 이체"], "answer": 0, "explain": "화상 통화는 늦게 도착한 프레임을 다시 받는 것보다 최신 프레임을 빨리 보여주는 게 중요합니다. 나머지는 데이터가 하나라도 빠지면 안 되는 서비스예요."}, {"q": "HTTP/3가 사용하는 전송 방식은?", "options": ["UDP 기반 QUIC", "TCP", "SCTP", "FTP"], "answer": 0, "explain": "QUIC은 UDP 위에서 신뢰성과 암호화를 직접 구현해 연결 수립을 빠르게 하고, 패킷 하나가 손실돼도 다른 요청이 막히지 않게 합니다."}], "interview": {"q": "TCP와 UDP의 차이와, 각각 어떤 상황에서 쓰는지 설명해 주세요.", "followups": ["3-way handshake가 왜 필요한가요?", "HTTP/3가 UDP 기반 QUIC을 쓰는 이유는?"], "model": "TCP는 3-way handshake로 연결을 먼저 맺는 연결 지향 프로토콜로, 순서 보장과 재전송, 흐름 제어와 혼잡 제어를 통해 데이터가 빠짐없이 순서대로 도착하도록 보장합니다. 그래서 웹 페이지, 파일 전송, 이메일처럼 정확성이 중요한 곳에 씁니다. UDP는 연결 수립 없이 바로 보내고 도착을 보장하지 않아 신뢰성은 낮지만 빠르고 오버헤드가 적어서, 실시간 스트리밍, 화상 통화, 게임처럼 속도가 더 중요한 곳에 씁니다.", "keywords": [{"label": "TCP: 연결 지향 / handshake", "match": ["연결 지향", "handshake", "핸드셰이크", "연결을"]}, {"label": "TCP: 순서 보장 / 재전송", "match": ["순서", "재전송", "신뢰"]}, {"label": "UDP: 빠름 / 비연결", "match": ["빠르", "비연결", "오버헤드"]}, {"label": "사용 예시", "match": ["스트리밍", "게임", "화상", "dns", "파일"]}]}, "project": {"scenario": "외부 폰트와 이미지 CDN을 쓰는 페이지의 첫 로딩이 유독 느리다.", "why": "새 도메인마다 DNS 조회, TCP 연결, TLS 핸드셰이크가 필요해서 실제 파일을 받기 전 왕복이 여러 번 생깁니다.", "fixes": [["preconnect", "link 태그의 rel=preconnect로 중요한 도메인에 미리 연결"], ["도메인 줄이기", "리소스를 가능한 한 같은 도메인이나 CDN으로 모으기"], ["HTTP/2·3", "연결 하나로 여러 요청을 처리해 연결 비용 재사용"]], "resume": "첫 화면 로딩을 분석해 외부 도메인 연결 비용이 큰 것을 확인하고, preconnect와 리소스 도메인 정리로 첫 콘텐츠 표시 시간을 단축했습니다."}}, {"id": "https-tls", "track": "CS", "level": 3, "minutes": 15, "title": "HTTPS와 TLS", "summary": "웹 통신을 안전하게 만드는 원리", "concept": {"analogy": "서버가 누구나 잠글 수 있는 열린 자물쇠(공개키)를 보내면, 브라우저가 둘만 쓸 비밀 열쇠를 상자에 넣어 잠가 보냅니다. 상자는 서버만 열 수 있어요. 이후 대화는 그 비밀 열쇠로 빠르게 주고받습니다. 인증서는 서버의 신분증이에요.", "definition": "HTTPS는 HTTP 통신을 <mark>TLS<\/mark>로 암호화한 것입니다. TLS 핸드셰이크에서 서버는 <mark>인증서<\/mark>로 자신이 진짜임을 증명하고, 양쪽은 <mark>비대칭키 기반 키 교환<\/mark>으로 <mark>세션키<\/mark>를 안전하게 정합니다. 실제 데이터는 빠른 <mark>대칭키<\/mark> 암호화로 주고받아, 도청(기밀성), 변조(무결성), 위장(인증)을 막습니다.", "terms": [["대칭키", "암호화·복호화에 같은 키. 빠름"], ["비대칭키", "공개키와 개인키 쌍. 키 교환·서명에 사용"], ["CA", "인증서에 서명해 신원을 보증하는 기관"]]}, "apply": {"code": "1. Client Hello   지원하는 암호 방식과 랜덤값 전달\n2. Server Hello   사용할 방식 선택 + 인증서 전달\n3. 인증서 검증     브라우저가 CA 서명과 도메인 확인\n4. 키 교환         양쪽이 같은 세션키를 계산\n5. 암호화 통신     이후 모든 HTTP 데이터를 세션키로 암호화", "output": [], "explain": "개발자 도구의 보안 탭이나 주소창 자물쇠를 누르면 인증서 발급 기관과 유효 기간을 직접 확인할 수 있어요. 인증서가 만료되면 브라우저가 경고 화면을 띄웁니다.", "kind": "flow"}, "quiz": [{"q": "실제 데이터 암호화에 대칭키를 쓰는 이유는?", "options": ["비대칭키보다 훨씬 빠르기 때문", "비대칭키보다 항상 안전하기 때문", "인증서가 필요 없기 때문", "키를 교환할 필요가 없기 때문"], "answer": 0, "explain": "비대칭키 연산은 무거워서 키 교환에만 쓰고, 대량의 데이터는 대칭키로 암호화합니다."}, {"q": "HTTPS 페이지에서 http:// 주소의 이미지를 불러오면?", "options": ["혼합 콘텐츠로 경고되거나 차단된다", "자동으로 정상 표시된다", "서버 오류가 난다", "캐시에서만 불러온다"], "answer": 0, "explain": "안전한 페이지 안의 안전하지 않은 요청을 혼합 콘텐츠(Mixed Content)라고 하며, 브라우저가 업그레이드하거나 차단합니다."}], "interview": {"q": "HTTPS가 어떻게 안전한 통신을 보장하는지 설명해 주세요.", "followups": ["대칭키와 비대칭키를 함께 쓰는 이유는?", "인증서는 무엇을 증명하나요?"], "model": "HTTPS는 HTTP를 TLS로 암호화한 프로토콜입니다. 연결 시 TLS 핸드셰이크에서 서버가 CA가 서명한 인증서를 보내고, 브라우저는 이를 검증해 접속한 서버가 진짜인지 확인합니다. 그다음 비대칭키 기반 키 교환으로 둘만 아는 세션키를 만들고, 이후 데이터는 빠른 대칭키 방식으로 암호화합니다. 이를 통해 중간에서 내용을 엿보거나, 바꾸거나, 다른 서버인 척하는 공격을 막습니다.", "keywords": [{"label": "TLS 핸드셰이크", "match": ["tls", "ssl", "핸드셰이크", "handshake"]}, {"label": "인증서 / CA 검증", "match": ["인증서", "ca", "인증 기관"]}, {"label": "비대칭키로 키 교환", "match": ["비대칭", "공개키", "키 교환"]}, {"label": "대칭키로 데이터 암호화", "match": ["대칭키", "세션키", "세션 키"]}, {"label": "기밀성·무결성·인증", "match": ["기밀", "무결", "도청", "변조", "위조"]}]}, "project": {"scenario": "배포한 사이트에서 일부 이미지가 안 보이고 콘솔에 Mixed Content 경고가 뜬다.", "why": "페이지는 HTTPS인데 DB에 저장된 이미지 주소가 http://로 되어 있어 브라우저가 안전하지 않은 요청을 막았습니다.", "fixes": [["주소 정리", "리소스 URL을 모두 https://로 바꾸고 저장 시점에 검증"], ["CSP", "upgrade-insecure-requests 지시어로 http 요청을 자동 업그레이드"], ["로컬 HTTPS", "mkcert로 로컬 개발 환경도 HTTPS로 맞춰 배포 전에 발견"]], "resume": "배포 후 발생한 혼합 콘텐츠 차단 문제의 원인을 HTTPS 동작 방식으로 파악하고, 리소스 URL 정리와 CSP 설정으로 해결했습니다."}}, {"id": "big-o", "track": "알고리즘", "level": 1, "minutes": 10, "title": "시간복잡도", "summary": "입력이 커질 때 코드가 얼마나 느려지는가", "concept": {"analogy": "친구 집을 찾을 때 주소를 알면 바로 가고(O(1)), 모르면 집집마다 초인종을 누르고(O(n)), 번지가 정렬돼 있으면 반씩 좁혀 갑니다(O(log n)).", "definition": "시간복잡도는 입력 크기 n이 커질 때 <mark>연산 횟수가 얼마나 빨리 늘어나는지<\/mark>를 나타냅니다. 빅오 표기에서는 상수와 낮은 차수를 버리고 <mark>최고차항<\/mark>만 봅니다. 대표적인 순서는 <mark>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)<\/mark>입니다.", "terms": [["O(n)", "배열 한 번 순회"], ["O(n²)", "이중 반복문"], ["O(n log n)", "효율적인 정렬"], ["공간복잡도", "추가로 쓰는 메모리의 양"]]}, "apply": {"code": {"js": "// O(n²): 모든 쌍을 비교\nfunction hasDuplicate(arr) {\n  for (let i = 0; i < arr.length; i++)\n    for (let j = i + 1; j < arr.length; j++)\n      if (arr[i] === arr[j]) return true;\n  return false;\n}\n\n// O(n): Set으로 한 번만 순회\nconst hasDuplicateFast = (arr) => new Set(arr).size !== arr.length;", "py": "# O(n²): 모든 쌍을 비교\ndef has_duplicate(arr):\n    for i in range(len(arr)):\n        for j in range(i + 1, len(arr)):\n            if arr[i] == arr[j]:\n                return True\n    return False\n\n# O(n): set으로 한 번만 순회\ndef has_duplicate_fast(arr):\n    return len(set(arr)) != len(arr)"}, "output": {"js": [], "py": []}, "explain": "n이 10,000이면 첫 번째는 최대 약 5천만 번, 두 번째는 약 1만 번 연산합니다. 대신 Set을 만드는 만큼 메모리를 더 쓰는데, 이게 시간과 공간의 트레이드오프예요.", "note": {"py": "파이썬의 x in list는 O(n), x in set과 x in dict는 평균 O(1)입니다. 코딩 테스트에서 가장 자주 하는 실수 중 하나예요."}}, "quiz": [{"q": "이 코드의 시간복잡도는?", "code": {"js": "for (let i = 0; i < n; i++)\n  for (let j = 0; j < n; j++) sum++;\nfor (let k = 0; k < n; k++) sum++;", "py": "for i in range(n):\n    for j in range(n):\n        total += 1\nfor k in range(n):\n    total += 1"}, "options": ["O(n²)", "O(n³)", "O(n² + n)", "O(n)"], "answer": 0, "explain": "n² + n에서 최고차항만 남겨 O(n²)입니다."}, {"q": "반복문 안에서 배열에 값이 있는지 확인하면? (JS의 arr.includes(x), Python의 x in list)", "options": ["O(n)", "O(n²)", "O(1)", "O(log n)"], "answer": 1, "explain": "includes는 내부적으로 배열을 순회하는 O(n) 연산입니다. 반복문 n번 안에서 부르면 O(n²)이 돼요."}], "interview": {"q": "시간복잡도가 무엇인지 설명하고, 코드의 복잡도를 줄여본 경험이 있다면 말해 주세요.", "followups": ["최악과 평균 시간복잡도는 어떻게 다른가요?", "시간을 줄이려고 공간을 더 쓴 예시가 있나요?"], "model": "시간복잡도는 입력 크기가 커질 때 알고리즘의 연산 횟수가 얼마나 증가하는지를 나타내는 지표로, 보통 빅오 표기법으로 최고차항만 남겨 표현합니다. 예를 들어 이중 반복문은 O(n²), 한 번 순회는 O(n)입니다. 프로젝트에서 두 배열을 비교할 때 filter 안에서 includes를 써서 O(n²)이 된 코드를, 한쪽을 Set으로 바꿔 조회를 O(1)로 만들어 전체를 O(n)으로 줄인 경험이 있습니다.", "keywords": [{"label": "입력 크기에 따른 증가율", "match": ["입력", "증가", "늘어"]}, {"label": "빅오 / 최고차항", "match": ["빅오", "big-o", "big o", "최고차항", "상수"]}, {"label": "복잡도 예시 비교", "match": ["o(n", "o(1", "o(log"]}, {"label": "개선 사례 (Set, Map 등)", "match": ["set", "map", "해시", "개선", "줄"]}]}, "project": {"scenario": "장바구니에서 '이미 담은 상품' 표시를 할 때 상품 목록이 길어지면 화면이 눈에 띄게 느려진다.", "why": "products.filter(p => cartIds.includes(p.id))처럼 반복문 안에서 배열을 다시 순회해 O(n×m)이 됩니다.", "fixes": [["Set으로 변환", "const cartSet = new Set(cartIds) 후 cartSet.has(p.id)로 O(1) 조회"], ["한 번만 만들기", "useMemo로 cartIds가 바뀔 때만 Set 생성"], ["측정", "console.time이나 Profiler로 개선 전후 비교"]], "resume": "장바구니 표시 로직의 O(n×m) 배열 비교를 Set 기반 조회로 바꿔 O(n+m)으로 줄이고, 상품 수가 많을 때의 렌더링 지연을 없앴습니다."}, "complexity": {"note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.", "items": [{"type": "limit", "problem": "정수 배열에서 합이 0이 되는 두 수가 있는지 확인하세요.", "constraint": "1 ≤ n ≤ 100,000 · 제한 시간 1초", "q": "이 제약에서 통과하려면 풀이의 시간복잡도가 어느 정도여야 할까요?", "options": ["O(n log n) 이하", "O(n²)이면 충분", "O(n³)이면 충분", "O(2ⁿ)이면 충분"], "answer": 0, "hint": "n² = 100,000²이 몇인지 계산해 보세요.", "explain": "n² = 10¹⁰이라 1초를 크게 넘습니다. n log n ≈ 1.7×10⁶이므로 정렬 후 투 포인터, 또는 해시 셋을 쓴 O(n) 풀이가 필요해요."}, {"type": "code", "problem": "다음 코드의 시간복잡도를 판단하세요.", "code": {"js": "let count = 0;\nfor (let i = 0; i < n; i++) {\n  for (let j = 1; j < n; j *= 2) {\n    count++;\n  }\n}", "py": "count = 0\nfor i in range(n):\n    j = 1\n    while j < n:\n        count += 1\n        j *= 2"}, "q": "이 코드의 시간복잡도는?", "options": ["O(n²)", "O(n log n)", "O(n)", "O(log n)"], "answer": 1, "hint": "안쪽 반복은 j가 1씩이 아니라 2배씩 커집니다.", "explain": "바깥 반복 n번 × 안쪽 반복 log₂n번(1, 2, 4, 8, …)이라 O(n log n)입니다. 반복문이 두 겹이라고 항상 O(n²)은 아니에요."}]}}, {"id": "binary-search", "track": "알고리즘", "level": 1, "minutes": 10, "title": "이진 탐색", "summary": "정렬된 데이터에서 범위를 절반씩 줄여 찾기", "concept": {"analogy": "1부터 100 사이 숫자 맞히기 게임에서 '50!' → '더 커' → '75!'처럼 매번 가운데를 부르면 7번 안에 반드시 맞힐 수 있어요.", "definition": "<mark>정렬된<\/mark> 배열에서 가운데 값과 목표를 비교해 탐색 범위를 <mark>절반씩<\/mark> 줄이는 방법입니다. 시간복잡도는 <mark>O(log n)<\/mark>이라 100만 개도 약 20번 비교로 찾습니다.", "terms": [["전제 조건", "데이터가 정렬되어 있어야 함"], ["lo / hi", "현재 탐색 범위의 양 끝"], ["lower bound", "목표 이상인 첫 위치"]]}, "apply": {"code": {"js": "function binarySearch(arr, target) {\n  let lo = 0, hi = arr.length - 1;\n  while (lo <= hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid + 1;  // 오른쪽 절반\n    else hi = mid - 1;                     // 왼쪽 절반\n  }\n  return -1;\n}\n\nbinarySearch([2, 5, 8, 12, 16, 23, 38], 23);", "py": "def binary_search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target:\n            return mid\n        if arr[mid] < target:\n            lo = mid + 1       # 오른쪽 절반\n        else:\n            hi = mid - 1       # 왼쪽 절반\n    return -1\n\nbinary_search([2, 5, 8, 12, 16, 23, 38], 23)"}, "output": {"js": ["5"], "py": ["5"]}, "explain": "범위가 [0,6] → [4,6] → [5,5]로 줄어 세 번 만에 인덱스 5를 찾습니다. lo <= hi 조건과 mid ± 1을 빠뜨리면 무한 루프가 생기니 경계 조건을 항상 확인하세요.", "note": {"py": "실전에서는 표준 라이브러리 bisect.bisect_left(arr, x)로 lower bound를 바로 구할 수 있어요."}}, "quiz": [{"q": "정렬된 배열 길이가 1,000,000일 때 최악의 비교 횟수는 대략?", "options": ["약 20번", "약 1,000번", "약 500,000번", "약 1,000,000번"], "answer": 0, "explain": "2^20 ≈ 1,048,576이므로 log₂(1,000,000) ≈ 20입니다."}, {"q": "이진 탐색을 쓸 수 있는 조건은?", "options": ["데이터가 정렬되어 있다", "데이터에 중복이 없다", "데이터가 연결 리스트다", "데이터 크기가 2의 거듭제곱이다"], "answer": 0, "explain": "정렬되어 있어야 가운데 값과 비교해 한쪽을 버릴 수 있습니다. 중복이 있어도 되고, 크기 제약도 없습니다."}], "interview": {"q": "이진 탐색의 동작 원리와 시간복잡도, 구현할 때 주의할 점을 설명해 주세요.", "followups": ["lower bound와 upper bound의 차이는?", "정렬되지 않은 데이터라면 어떻게 하시겠어요?"], "model": "이진 탐색은 정렬된 배열에서 가운데 값과 목표를 비교해 탐색 범위를 절반씩 줄이는 알고리즘으로, 시간복잡도는 O(log n)입니다. 구현할 때는 반복 조건(lo <= hi)과 범위 갱신(mid + 1, mid - 1) 같은 경계 조건을 잘못 쓰면 무한 루프나 누락이 생기므로 주의해야 합니다. 데이터가 정렬되어 있지 않다면 정렬 비용 O(n log n)을 감수할 만큼 탐색이 반복되는지 따져보고, 한 번만 찾는다면 선형 탐색이 낫습니다.", "keywords": [{"label": "정렬 전제", "match": ["정렬"]}, {"label": "절반씩 줄임", "match": ["절반", "반씩", "반으로"]}, {"label": "O(log n)", "match": ["log"]}, {"label": "경계 조건 / 무한 루프", "match": ["경계", "무한", "lo <= hi", "mid + 1", "mid+1"]}]}, "project": {"scenario": "아이템 높이가 제각각인 1만 개 리스트를 가상 스크롤로 만들 때, 현재 스크롤 위치에 보여줄 첫 아이템을 찾아야 한다.", "why": "아이템별 누적 높이 배열은 항상 오름차순이라 이진 탐색으로 O(log n)에 찾을 수 있습니다. 매 스크롤마다 처음부터 훑는 O(n)보다 훨씬 빠릅니다.", "fixes": [["누적 offset 배열", "offsets[i] = i번째 아이템의 시작 y좌표"], ["이진 탐색", "scrollTop 이하인 마지막 offset의 인덱스 찾기"], ["렌더링", "그 인덱스부터 화면 높이만큼만 렌더링"]], "resume": "가변 높이 가상 스크롤에서 보이는 아이템 탐색을 누적 높이 배열과 이진 탐색으로 구현해, 1만 개 리스트도 부드럽게 스크롤되도록 만들었습니다."}, "complexity": {"note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.", "items": [{"type": "limit", "problem": "정렬된 배열이 주어지고, q개의 질문마다 x가 배열에 있는지 답하세요.", "constraint": "n ≤ 1,000,000 · q ≤ 100,000 · 제한 시간 1초", "q": "가장 적절한 풀이의 시간복잡도는?", "options": ["O(n · q)", "O(q log n)", "O(n²)", "O(n · q · log n)"], "answer": 1, "hint": "질문마다 배열을 처음부터 훑으면 몇 번 연산할까요?", "explain": "질문마다 선형 탐색하면 n·q = 10¹¹로 시간 초과입니다. 이미 정렬되어 있으니 질문마다 이진 탐색을 하면 q log n ≈ 2×10⁶이에요. (배열을 해시 셋에 넣는 O(n + q) 풀이도 가능합니다.)"}, {"type": "code", "problem": "x 이상의 제곱수 중 가장 작은 수의 제곱근을 찾는 코드입니다.", "code": {"js": "function sqrtCeil(x) {\n  let lo = 0, hi = x;\n  while (lo < hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (mid * mid >= x) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}", "py": "def sqrt_ceil(x):\n    lo, hi = 0, x\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if mid * mid >= x:\n            hi = mid\n        else:\n            lo = mid + 1\n    return lo"}, "q": "x에 대한 시간복잡도는?", "options": ["O(log x)", "O(x)", "O(√x)", "O(1)"], "answer": 0, "hint": "배열이 없어도, 답이 될 수 있는 범위 0 ~ x를 매번 절반으로 줄이고 있어요.", "explain": "탐색 범위 0 ~ x를 절반씩 줄이므로 O(log x)입니다. 이렇게 '답의 범위'를 이진 탐색하는 방식을 파라메트릭 서치라고 해요."}]}}, {"id": "stack-queue", "track": "알고리즘", "level": 1, "minutes": 10, "title": "스택과 큐", "summary": "넣고 꺼내는 순서가 다른 두 자료구조", "concept": {"analogy": "스택은 쌓아둔 접시예요. 마지막에 올린 접시를 먼저 꺼냅니다. 큐는 맛집 대기 줄이에요. 먼저 온 사람이 먼저 들어갑니다.", "definition": "<mark>스택<\/mark>은 나중에 넣은 것을 먼저 꺼내는 <mark>LIFO<\/mark> 구조이고, <mark>큐<\/mark>는 먼저 넣은 것을 먼저 꺼내는 <mark>FIFO<\/mark> 구조입니다. 스택은 함수 호출(콜스택), 실행 취소, 괄호 검사에, 큐는 작업 대기열, BFS, 이벤트 루프의 태스크 큐에 쓰입니다.", "terms": [["push / pop", "스택의 넣기와 꺼내기"], ["enqueue / dequeue", "큐의 넣기와 꺼내기"], ["덱(Deque)", "양쪽 끝에서 넣고 뺄 수 있는 구조"]]}, "apply": {"code": {"js": "function isValid(s) {\n  const pair = { ')': '(', ']': '[', '}': '{' };\n  const stack = [];\n  for (const ch of s) {\n    if ('([{'.includes(ch)) stack.push(ch);     // 여는 괄호는 쌓고\n    else if (stack.pop() !== pair[ch]) return false; // 닫는 괄호는 짝 확인\n  }\n  return stack.length === 0;\n}\n\nisValid('{[()]}');", "py": "def is_valid(s):\n    pair = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in s:\n        if ch in '([{':\n            stack.append(ch)               # 여는 괄호는 쌓고\n        elif not stack or stack.pop() != pair[ch]:\n            return False                   # 닫는 괄호는 짝 확인\n    return not stack\n\nis_valid('{[()]}')"}, "output": {"js": ["true"], "py": ["True"]}, "explain": "가장 최근에 열린 괄호가 가장 먼저 닫혀야 하므로 LIFO인 스택이 딱 맞습니다. 코딩 테스트 단골 문제예요.", "note": {"py": "파이썬 리스트는 끝에서 넣고 빼는 append, pop이 O(1)이라 그대로 스택으로 씁니다. 큐는 collections.deque의 popleft()를 써야 O(1)이에요."}}, "quiz": [{"q": "브라우저의 '뒤로 가기' 기록을 구현하기에 적합한 자료구조는?", "options": ["스택", "큐", "해시 테이블", "그래프"], "answer": 0, "explain": "가장 최근에 방문한 페이지로 먼저 돌아가야 하니 LIFO인 스택입니다. 앞으로 가기는 두 번째 스택으로 구현해요."}, {"q": "배열의 맨 앞에서 꺼내는 방식(JS shift(), Python list.pop(0))으로 큐를 만들면?", "options": ["매번 원소를 앞으로 당겨 O(n)이 걸린다", "동작하지 않는다", "순서가 뒤집힌다", "메모리 누수가 생긴다"], "answer": 0, "explain": "shift는 나머지 원소의 인덱스를 모두 당기기 때문에 데이터가 많으면 느립니다. 시작 인덱스를 변수로 관리하면 O(1)로 꺼낼 수 있어요."}], "interview": {"q": "스택과 큐의 차이를 설명하고, 프론트엔드에서 쓰이는 예를 들어 주세요.", "followups": ["스택 두 개로 큐를 구현할 수 있나요?", "에디터의 실행 취소·다시 실행은 어떻게 설계하시겠어요?"], "model": "스택은 나중에 들어온 데이터가 먼저 나가는 LIFO 구조이고, 큐는 먼저 들어온 데이터가 먼저 나가는 FIFO 구조입니다. 프론트엔드에서는 자바스크립트의 콜스택이 스택이고, 이벤트 루프의 태스크 큐가 큐입니다. 실무에서는 에디터의 실행 취소 기능을 스택으로, 순서대로 처리해야 하는 업로드 대기열을 큐로 구현할 수 있습니다.", "keywords": [{"label": "스택: LIFO", "match": ["lifo", "나중에", "후입"]}, {"label": "큐: FIFO", "match": ["fifo", "먼저 들어", "선입"]}, {"label": "콜스택 / 태스크 큐", "match": ["콜스택", "태스크 큐", "이벤트 루프"]}, {"label": "실무 예시", "match": ["실행 취소", "undo", "뒤로", "대기열", "히스토리", "bfs"]}]}, "project": {"scenario": "메모 에디터에 Ctrl+Z(실행 취소)와 Ctrl+Shift+Z(다시 실행)를 추가해야 한다.", "why": "가장 최근 변경부터 되돌려야 하므로 스택 두 개로 깔끔하게 설계할 수 있습니다.", "fixes": [["undo 스택", "변경할 때마다 이전 상태를 push, 실행 취소 시 pop"], ["redo 스택", "실행 취소한 상태를 push, 새 변경이 생기면 비우기"], ["길이 제한", "스택 최대 50개로 제한해 메모리 사용 관리"]], "resume": "메모 에디터의 실행 취소·다시 실행 기능을 두 개의 스택으로 설계하고, 기록 개수를 제한해 메모리 사용을 일정하게 유지했습니다."}, "complexity": {"note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.", "items": [{"type": "code", "problem": "작업 n개를 순서대로 처리하는 코드입니다. run()은 O(1)이라고 가정합니다.", "code": {"js": "const queue = [...tasks];   // n개\nwhile (queue.length) {\n  const t = queue.shift();\n  run(t);\n}", "py": "queue = list(tasks)        # n개\nwhile queue:\n    t = queue.pop(0)\n    run(t)"}, "q": "전체 시간복잡도는?", "options": ["O(n)", "O(n²)", "O(n log n)", "O(1)"], "answer": 1, "hint": "맨 앞을 꺼내면 나머지 원소들은 어떻게 될까요?", "explain": "맨 앞 원소를 빼면 나머지를 한 칸씩 당겨야 해서 꺼낼 때마다 O(n)이고, n번 반복하니 O(n²)입니다. JS는 시작 인덱스 포인터, 파이썬은 deque.popleft()를 쓰면 O(n)이 돼요."}, {"type": "code", "problem": "각 원소의 오른쪽에서 처음 나오는 더 큰 수를 찾는 코드입니다.", "code": {"js": "function nextGreater(nums) {\n  const res = Array(nums.length).fill(-1);\n  const stack = [];                       // 인덱스를 담는 스택\n  for (let i = 0; i < nums.length; i++) {\n    while (stack.length && nums[stack.at(-1)] < nums[i]) {\n      res[stack.pop()] = nums[i];\n    }\n    stack.push(i);\n  }\n  return res;\n}", "py": "def next_greater(nums):\n    res = [-1] * len(nums)\n    stack = []                            # 인덱스를 담는 스택\n    for i, x in enumerate(nums):\n        while stack and nums[stack[-1]] < x:\n            res[stack.pop()] = x\n        stack.append(i)\n    return res"}, "q": "전체 시간복잡도는?", "options": ["O(n²)", "O(n)", "O(n log n)", "O(log n)"], "answer": 1, "hint": "반복문 모양 말고, 원소 하나가 스택에 몇 번 들어가고 몇 번 나오는지 세어 보세요.", "explain": "while이 for 안에 있어 O(n²)처럼 보이지만, 각 인덱스는 스택에 딱 한 번 들어가고 최대 한 번 나옵니다. 전체 연산은 2n번 이하라 O(n)이에요. 이런 분석을 분할 상환(amortized) 분석이라고 합니다."}]}}, {"id": "hash-table", "track": "알고리즘", "level": 2, "minutes": 12, "title": "해시 테이블", "summary": "키로 값을 평균 O(1)에 찾는 자료구조", "concept": {"analogy": "이름을 사물함 번호로 바꾸는 규칙(해시 함수)이 있으면, 이름만 듣고 바로 그 사물함을 열 수 있어요. 두 사람이 같은 번호를 받으면(충돌) 한 사물함에 같이 넣고 안에서 이름을 확인합니다.", "definition": "해시 테이블은 키를 <mark>해시 함수<\/mark>로 배열 인덱스로 바꿔 저장해, 조회·삽입·삭제를 <mark>평균 O(1)<\/mark>에 합니다. 서로 다른 키가 같은 인덱스를 가지는 <mark>충돌<\/mark>은 체이닝이나 개방 주소법으로 해결합니다. 자바스크립트의 <mark>Map<\/mark>, Set, 객체가 대표적인 예입니다.", "terms": [["체이닝", "같은 칸에 리스트로 이어 붙이기"], ["개방 주소법", "빈 칸을 찾아 다른 칸에 저장"], ["로드 팩터", "칸 대비 저장된 데이터 비율. 높으면 크기 확장"]]}, "apply": {"code": {"js": "function twoSum(nums, target) {\n  const seen = new Map();               // 값 → 인덱스\n  for (let i = 0; i < nums.length; i++) {\n    const need = target - nums[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(nums[i], i);\n  }\n}\n\ntwoSum([2, 7, 11, 15], 9);", "py": "def two_sum(nums, target):\n    seen = {}                          # 값 → 인덱스\n    for i, x in enumerate(nums):\n        need = target - x\n        if need in seen:               # dict 조회는 평균 O(1)\n            return [seen[need], i]\n        seen[x] = i\n\ntwo_sum([2, 7, 11, 15], 9)"}, "output": {"js": ["[0, 1]"], "py": ["[0, 1]"]}, "explain": "이중 반복문이면 O(n²)인 문제를, 지나온 값을 Map에 저장해 O(n)으로 풉니다. '찾는 값이 이미 나왔나?'를 O(1)에 확인하는 게 핵심이에요.", "note": {"py": "파이썬의 dict와 set이 해시 테이블입니다. 개수를 셀 땐 collections.Counter를 쓰면 더 간단해요."}}, "quiz": [{"q": "충돌이 극단적으로 많아지면 조회 시간은?", "options": ["O(n)까지 느려진다", "항상 O(1)이다", "O(log n)이 된다", "O(n²)이 된다"], "answer": 0, "explain": "모든 키가 같은 칸에 몰리면 결국 리스트를 처음부터 훑어야 합니다. 그래서 좋은 해시 함수와 적절한 크기 확장이 중요해요."}, {"q": "객체 대신 Map을 쓰는 게 좋은 경우는?", "options": ["키가 객체이거나 추가·삭제가 잦을 때", "JSON.stringify로 저장할 때", "키가 고정된 설정값일 때", "프로토타입 메서드를 상속받고 싶을 때"], "answer": 0, "explain": "Map은 어떤 값이든 키로 쓸 수 있고, 삽입 순서를 보장하며, 잦은 추가·삭제에 최적화되어 있습니다. 반면 JSON으로 바로 직렬화되지는 않아요."}], "interview": {"q": "해시 테이블의 동작 원리와 충돌을 해결하는 방법을 설명해 주세요.", "followups": ["JavaScript의 Object와 Map은 어떻게 다른가요?", "해시 테이블이 항상 O(1)이 아닌 이유는?"], "model": "해시 테이블은 키를 해시 함수에 넣어 나온 값을 배열 인덱스로 사용해 데이터를 저장하는 자료구조로, 평균 O(1)에 조회, 삽입, 삭제가 가능합니다. 서로 다른 키가 같은 인덱스를 가지는 충돌이 생기면, 같은 칸에 연결 리스트로 이어 붙이는 체이닝이나 비어 있는 다른 칸을 찾는 개방 주소법으로 해결합니다. 충돌이 많아지면 최악 O(n)까지 느려질 수 있어 데이터가 일정 비율 이상 차면 테이블 크기를 늘립니다.", "keywords": [{"label": "해시 함수 → 인덱스", "match": ["해시 함수", "인덱스"]}, {"label": "평균 O(1)", "match": ["o(1"]}, {"label": "충돌", "match": ["충돌", "collision"]}, {"label": "체이닝 / 개방 주소법", "match": ["체이닝", "chaining", "개방", "open addressing"]}, {"label": "최악 O(n) / 크기 확장", "match": ["o(n", "확장", "리사이즈", "로드"]}]}, "project": {"scenario": "채팅 목록에서 메시지마다 users.find(u => u.id === msg.userId)로 작성자를 찾았더니 메시지가 쌓일수록 느려진다.", "why": "메시지 m개마다 사용자 n명을 순회해 O(n×m)이 됩니다.", "fixes": [["id로 Map 만들기", "new Map(users.map(u => [u.id, u]))로 한 번 변환 후 O(1) 조회"], ["상태 정규화", "byId와 allIds로 나눠 저장하는 패턴 적용"], ["useMemo", "users가 바뀔 때만 Map을 다시 생성"]], "resume": "채팅 메시지 렌더링 시 반복되던 배열 탐색을 id 기반 Map으로 정규화해 작성자 조회를 O(1)로 바꾸고, 긴 대화방에서의 렌더링 지연을 해결했습니다."}, "complexity": {"note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.", "items": [{"type": "limit", "problem": "단어 목록에서 가장 많이 나온 단어를 찾으세요.", "constraint": "n ≤ 200,000 · 제한 시간 1초", "q": "통과할 수 있는 접근은?", "options": ["단어마다 목록 전체를 다시 세기", "해시 맵에 등장 횟수 세기", "두 단어씩 모든 쌍 비교하기", "모든 부분집합 확인하기"], "answer": 1, "hint": "각 접근의 시간복잡도를 먼저 적어 보세요.", "explain": "해시 맵으로 세면 한 번 순회 O(n)입니다. 단어마다 다시 세거나 모든 쌍을 비교하면 O(n²) = 4×10¹⁰이라 시간 초과예요."}, {"type": "code", "problem": "애너그램(글자 구성이 같은 단어)끼리 묶는 코드입니다. 단어는 n개, 각 단어의 최대 길이는 k입니다.", "code": {"js": "function groupAnagrams(words) {\n  const groups = new Map();\n  for (const w of words) {\n    const key = [...w].sort().join('');   // 글자 정렬\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(w);\n  }\n  return [...groups.values()];\n}", "py": "from collections import defaultdict\n\ndef group_anagrams(words):\n    groups = defaultdict(list)\n    for w in words:\n        key = ''.join(sorted(w))          # 글자 정렬\n        groups[key].append(w)\n    return list(groups.values())"}, "q": "전체 시간복잡도는?", "options": ["O(n)", "O(n · k log k)", "O(n²)", "O(k log k)"], "answer": 1, "hint": "해시 맵 조회는 O(1)이지만, 키를 만드는 데 드는 비용도 있어요.", "explain": "단어 n개마다 길이 k인 문자열을 정렬하므로 O(n · k log k)입니다. 해시 맵 조회만 보고 O(n)이라고 답하기 쉬운데, 키를 만드는 비용까지 세야 해요."}]}}, {"id": "bfs-dfs", "track": "알고리즘", "level": 2, "minutes": 15, "title": "BFS와 DFS", "summary": "그래프와 트리를 탐색하는 두 가지 방법", "concept": {"analogy": "미로에서 DFS는 한 길로 끝까지 가보고 막히면 돌아와 다른 길을 갑니다. BFS는 물이 퍼지듯 입구에서 가까운 칸부터 차례로 넓혀 갑니다.", "definition": "<mark>DFS<\/mark>(깊이 우선 탐색)는 스택이나 재귀로 한 방향을 끝까지 탐색합니다. <mark>BFS<\/mark>(너비 우선 탐색)는 <mark>큐<\/mark>로 가까운 노드부터 방문해, 가중치 없는 그래프에서 <mark>최단 거리<\/mark>를 찾습니다. 둘 다 같은 노드를 다시 방문하지 않도록 <mark>방문 체크<\/mark>가 필요하며, 시간복잡도는 O(V + E)입니다.", "terms": [["V, E", "노드(정점) 수와 간선 수"], ["방문 배열", "이미 본 노드를 기록해 무한 반복 방지"], ["백트래킹", "DFS 중 조건에 안 맞으면 되돌아가기"]]}, "apply": {"code": {"js": "// DOM도 트리! 조건에 맞는 가장 가까운 노드를 BFS로 찾기\nfunction findNearest(root, predicate) {\n  const queue = [root];\n  let head = 0;                          // shift() 대신 포인터로 O(1)\n  while (head < queue.length) {\n    const node = queue[head++];\n    if (predicate(node)) return node;\n    queue.push(...node.children);\n  }\n  return null;\n}", "py": "from collections import deque\n\ndef bfs_distance(graph, start):\n    dist = {start: 0}                  # 방문 체크 겸 거리 기록\n    q = deque([start])\n    while q:\n        node = q.popleft()             # 큐: 먼저 넣은 것부터, O(1)\n        for nxt in graph[node]:\n            if nxt not in dist:\n                dist[nxt] = dist[node] + 1\n                q.append(nxt)\n    return dist\n\ngraph = {'A': ['B', 'C'], 'B': ['D'], 'C': ['D'], 'D': []}\nbfs_distance(graph, 'A')"}, "output": {"js": [], "py": ["{'A': 0, 'B': 1, 'C': 1, 'D': 2}"]}, "explain": "BFS는 얕은 깊이부터 찾기 때문에 루트에서 가장 가까운 노드를 먼저 반환합니다. DOM이나 컴포넌트 트리는 사이클이 없어서 방문 체크가 필요 없지만, 일반 그래프에서는 반드시 넣어야 해요.", "note": {"py": "파이썬 예시는 사이클이 있을 수 있는 일반 그래프라서 방문 체크를 함께 하고, 시작점에서 각 노드까지의 최단 거리를 구합니다."}}, "quiz": [{"q": "가중치가 없는 미로에서 최단 경로를 찾을 때 적합한 방법은?", "options": ["BFS", "DFS", "이진 탐색", "정렬"], "answer": 0, "explain": "BFS는 거리 1인 칸을 모두 본 뒤 거리 2로 넘어가므로, 처음 도착한 순간이 최단 거리입니다."}, {"q": "DFS 구현에 주로 쓰는 자료구조는?", "options": ["스택 (또는 재귀)", "큐", "힙", "해시 테이블"], "answer": 0, "explain": "재귀 호출 자체가 콜스택을 쓰기 때문에, 재귀 DFS는 스택을 쓰는 것과 같습니다."}], "interview": {"q": "BFS와 DFS의 차이와, 각각 어떤 문제에 적합한지 설명해 주세요.", "followups": ["방문 체크를 하지 않으면 어떤 문제가 생기나요?", "재귀로 구현한 DFS의 단점은?"], "model": "BFS는 큐를 이용해 시작 노드에서 가까운 노드부터 차례로 방문하는 방식으로, 가중치가 없는 그래프에서 최단 거리를 구할 때 적합합니다. DFS는 스택이나 재귀를 이용해 한 경로를 끝까지 탐색한 뒤 되돌아오는 방식으로, 모든 경로나 조합을 탐색하거나 백트래킹이 필요한 문제에 적합합니다. 둘 다 방문 체크로 같은 노드를 반복 방문하지 않게 해야 하고, 시간복잡도는 O(V + E)입니다. 재귀 DFS는 깊이가 깊으면 스택 오버플로가 날 수 있습니다.", "keywords": [{"label": "BFS: 큐, 가까운 노드부터", "match": ["큐", "너비", "가까운"]}, {"label": "DFS: 스택·재귀, 깊이 우선", "match": ["스택", "재귀", "깊이"]}, {"label": "최단 거리", "match": ["최단"]}, {"label": "방문 체크", "match": ["방문"]}, {"label": "O(V + E)", "match": ["v + e", "v+e"]}]}, "project": {"scenario": "폴더 트리 UI에서 파일명으로 검색하면 해당 파일까지의 상위 폴더를 모두 펼쳐 보여줘야 한다.", "why": "트리를 DFS로 내려가면서 지나온 경로를 기록하면, 파일을 찾는 순간 펼쳐야 할 폴더 목록을 바로 얻을 수 있습니다.", "fixes": [["DFS + 경로 기록", "재귀로 내려가며 path 배열에 폴더 id를 push, 돌아올 때 pop"], ["펼침 상태", "찾은 경로의 폴더 id들을 expanded Set에 추가"], ["깊은 트리", "깊이가 아주 깊다면 재귀 대신 명시적 스택으로 구현"]], "resume": "폴더 트리 검색 기능을 DFS와 경로 기록으로 구현해, 검색 결과의 상위 폴더가 자동으로 펼쳐지도록 만들었습니다."}, "complexity": {"note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.", "items": [{"type": "limit", "problem": "N×M 격자 미로에서 출발점부터 도착점까지 최소 몇 칸을 이동해야 하는지 구하세요.", "constraint": "N, M ≤ 1,000 · 제한 시간 1초", "q": "BFS로 풀 때의 시간복잡도는?", "options": ["O(N · M)", "O((N · M)²)", "O(N + M)", "O(2^(N·M))"], "answer": 0, "hint": "정점(칸) 수 V와 간선 수 E를 N, M으로 나타내 보세요.", "explain": "칸이 V = N·M = 10⁶개, 칸마다 상하좌우 간선이 최대 4개라 E ≈ 4V입니다. O(V + E) = O(N·M)이므로 충분히 통과해요."}, {"type": "code", "problem": "그래프를 V×V 인접 행렬로 저장하고 BFS를 하는 코드입니다.", "code": {"js": "while (head < queue.length) {\n  const u = queue[head++];\n  for (let v = 0; v < V; v++) {\n    if (adj[u][v] && !visited[v]) {\n      visited[v] = true;\n      queue.push(v);\n    }\n  }\n}", "py": "while q:\n    u = q.popleft()\n    for v in range(V):\n        if adj[u][v] and not visited[v]:\n            visited[v] = True\n            q.append(v)"}, "q": "이 BFS의 시간복잡도는?", "options": ["O(V + E)", "O(V²)", "O(E)", "O(V log V)"], "answer": 1, "hint": "한 정점의 이웃을 찾을 때 몇 칸을 확인하나요?", "explain": "인접 행렬에서는 이웃을 찾으려고 매번 V칸을 다 확인해서 O(V²)입니다. 간선이 적은 그래프라면 인접 리스트로 바꿔 O(V + E)로 줄일 수 있어요."}]}}];
+
+function stepsOf(t){
+  const s = [["concept","개념"],["apply","응용"],["quiz","문제"]];
+  if (t.complexity) s.push(["cx","복잡도 판단"]);
+  s.push(["interview","면접 질문"],["answer","내 답변"],["project","프로젝트 활용"]);
+  return s;
+}
+
+/* ---------- state (per-viewer, browser only) ---------- */
+const KEY = "daily-topic-v2";
+let S = {progress:{}, days:[], lang:"js", track:"all"};
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const today = () => ymd(new Date());
+function addDays(n){ const d = new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+function P(id){ return S.progress[id] || (S.progress[id] = {seen:[], quiz:{}, cx:{}, hints:{}, answer:"", rating:null, done:false, next:null}); }
+function touchDay(){ const t = today(); if (!S.days.includes(t)) S.days.push(t); }
+
+let cur = TOPICS[0].id, step = 0, checked = false;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const topic = () => TOPICS.find(t => t.id === cur);
+
+/* code helpers: code fields are a string (flow) or {js, py} */
+const hasPy = c => !!(c && typeof c === "object" && c.py);
+const langOf = c => (S.lang === "py" && hasPy(c)) ? "py" : (typeof c === "string" ? "flow" : "js");
+const pick = c => typeof c === "string" ? c : c[langOf(c)];
+function codeHTML(s, lang){
+  const h = esc(s);
+  if (lang === "py") return h.replace(/(^|\s)(#[^\n]*)/gm, '$1<span class="c">$2</span>');
+  return h.replace(/(\/\/[^\n]*)/g, '<span class="c">$1</span>');
+}
+const LABEL = {js:"JavaScript", py:"Python", flow:"흐름"};
+function codeBlock(c, opts){
+  opts = opts || {};
+  const lang = langOf(c);
+  let bar = "";
+  if (hasPy(c)) bar = '<div class="lang" role="group" aria-label="코드 언어"><button data-lang="js" aria-pressed="'+(lang==="js")+'">JavaScript</button><button data-lang="py" aria-pressed="'+(lang==="py")+'">Python</button></div>';
+  else if (lang === "js" && opts.jsOnlyNote) bar = '<span class="only">브라우저·JavaScript 전용 개념이라 JS 코드만 제공해요</span>';
+  return '<div class="codewrap"><div class="codebar"><span class="code-label">'+LABEL[lang]+'</span>'+bar+'</div><pre class="code">'+codeHTML(pick(c), lang)+'</pre></div>';
+}
+function bindLang(root){
+  root.querySelectorAll(".lang button").forEach(b => b.onclick = () => { S.lang = b.dataset.lang; save(); render(); });
+}
+
+function streak(){
+  let n = 0; const d = new Date();
+  if (!S.days.includes(ymd(d))) d.setDate(d.getDate()-1);
+  while (S.days.includes(ymd(d))) { n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+const isDue = t => { const p = S.progress[t.id]; return p && p.done && p.next && p.next <= today(); };
+
+function renderRail(){
+  const item = t => {
+    const p = S.progress[t.id]; const cls = p && p.done ? "done" : (p && p.seen.length ? "part" : "");
+    const tag = isDue(t) ? '<span class="due">복습</span>' : (p && p.done && p.next ? '<span class="chip">'+p.next.slice(5).replace("-","/")+'</span>' : '');
+    return '<button class="titem'+(t.id===cur?' on':'')+'" data-id="'+t.id+'"><span class="dot '+cls+'"></span><span class="nm">'+t.title+'<small>'+t.track+' · '+LEVELS[t.level]+'</small></span>'+tag+'</button>';
+  };
+  const due = TOPICS.filter(isDue);
+  $("dueList").innerHTML = due.length ? due.map(item).join("") : '<p class="empty">오늘 복습할 토픽이 없어요.</p>';
+  $("filters").innerHTML = [["all","전체"]].concat(TRACKS.map(x => [x,x])).map(f => {
+    const n = f[0]==="all" ? TOPICS.length : TOPICS.filter(t => t.track===f[0]).length;
+    return '<button data-f="'+f[0]+'" class="'+(S.track===f[0]?'on':'')+'">'+f[1]+' '+n+'</button>';
+  }).join("");
+  const shown = S.track === "all" ? TRACKS : [S.track];
+  $("allList").innerHTML = shown.map(tr => (S.track==="all" ? '<p class="track-head">'+tr+'</p>' : '') + TOPICS.filter(t => t.track===tr).sort((a,b)=>a.level-b.level).map(item).join("")).join("");
+  $("filters").querySelectorAll("button").forEach(b => b.onclick = () => { S.track = b.dataset.f; save(); renderRail(); });
+  document.querySelectorAll(".titem").forEach(b => b.onclick = () => { cur = b.dataset.id; step = 0; checked = false; render(); });
+  $("sStreak").textContent = streak()+"일";
+  $("sDone").textContent = TOPICS.filter(t => S.progress[t.id] && S.progress[t.id].done).length+"/"+TOPICS.length;
+  $("sDue").textContent = due.length;
+}
+
+function renderHead(){
+  const t = topic(), st = stepsOf(t), p = P(t.id);
+  if (step >= st.length) step = st.length - 1;
+  $("meta").innerHTML = '<span class="chip lv">'+LEVELS[t.level]+'</span><span class="chip">'+t.track+'</span><span class="chip">약 '+t.minutes+'분</span>';
+  $("title").textContent = t.title; $("sub").textContent = t.summary;
+  $("steps").innerHTML = st.map((s,i) => '<button class="step'+(i===step?' on':'')+(p.seen.includes(s[0])?' seen':'')+'" data-i="'+i+'"><span class="n">'+(i+1)+'</span>'+s[1]+'</button>').join("");
+  document.querySelectorAll(".step").forEach(b => b.onclick = () => { step = +b.dataset.i; render(); });
+  const last = step === st.length - 1;
+  $("prev").disabled = step === 0;
+  $("next").textContent = last ? (p.done ? "학습 완료됨" : "오늘 학습 완료") : "다음 단계";
+  $("next").disabled = last && p.done;
+  $("schema").innerHTML = esc(JSON.stringify(t, null, 2));
+}
+
+function choiceBlock(item, pickIdx, prefix){
+  return '<div class="opts">'+item.options.map((o,oi) => {
+    let c = ""; if (pickIdx !== undefined) { if (oi === item.answer) c = " right"; else if (oi === pickIdx) c = " wrong"; }
+    return '<button class="opt'+c+'" data-'+prefix+'="'+oi+'"'+(pickIdx!==undefined?' disabled':'')+'>'+esc(o)+'</button>';
+  }).join("")+'</div>'+(pickIdx!==undefined?'<p class="explain">'+(pickIdx===item.answer?'정답이에요. ':'다시 보기: ')+item.explain+'</p>':'');
+}
+
+const RULES = [["n ≤ 10","O(n!)","모든 순열"],["n ≤ 20","O(2ⁿ)","모든 부분집합"],["n ≤ 500","O(n³)","삼중 반복문"],["n ≤ 5,000","O(n²)","이중 반복문"],["n ≤ 1,000,000","O(n log n)","정렬, 이진 탐색 반복"],["n ≤ 10,000,000","O(n)","한 번 순회, 해시"],["그 이상","O(log n), O(1)","이진 탐색, 수학 공식"]];
+
+function renderBody(){
+  const t = topic(), p = P(t.id), b = $("body");
+  const key = stepsOf(t)[step][0];
+  if (!p.seen.includes(key)) { p.seen.push(key); touchDay(); save(); }
+
+  if (key === "concept") {
+    b.innerHTML = '<h3>비유로 먼저</h3><div class="analogy"><p>'+t.concept.analogy+'</p></div>'+
+      '<h3>정확한 정의</h3><p class="prose">'+t.concept.definition+'</p>'+
+      '<h3>핵심 용어</h3><div class="terms">'+t.concept.terms.map(x => '<span class="term"><b>'+x[0]+'</b>'+x[1]+'</span>').join("")+'</div>';
+  } else if (key === "apply") {
+    const a = t.apply, lang = langOf(a.code);
+    const out = Array.isArray(a.output) ? a.output : (a.output[lang] || []);
+    const note = a.note && a.note[lang];
+    b.innerHTML = '<h3>'+(a.kind==="flow"?"흐름으로 보기":"코드로 확인하기")+'</h3>'+codeBlock(a.code, {jsOnlyNote:true})+
+      (out.length ? '<div class="out"><b>출력</b>'+out.map(o => '<span>'+esc(o)+'</span>').join("")+'</div>' : '')+
+      '<p class="prose">'+a.explain+'</p>'+(note ? '<p class="tip"><b>Python 포인트</b> '+note+'</p>' : '');
+  } else if (key === "quiz") {
+    b.innerHTML = t.quiz.map((q,qi) => '<div class="q" data-qi="'+qi+'"><p class="q-title">Q'+(qi+1)+'. '+q.q+'</p>'+(q.code?codeBlock(q.code):'')+choiceBlock(q, p.quiz[qi], "o")+'</div>').join("");
+    b.querySelectorAll(".opt").forEach(o => o.onclick = () => { p.quiz[o.closest(".q").dataset.qi] = +o.dataset.o; save(); render(); });
+  } else if (key === "cx") {
+    const cx = t.complexity;
+    b.innerHTML = '<div class="rule"><h3>입력 크기로 보는 허용 시간복잡도</h3><div class="rule-t"><table><thead><tr><th>입력 크기</th><th>허용 복잡도</th><th>대표 풀이</th></tr></thead><tbody>'+
+      RULES.map(r => '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join("")+'</tbody></table></div><p class="note">'+cx.note+'</p></div>'+
+      cx.items.map((it,i) => {
+        const hk = "cx"+i;
+        return '<div class="q" data-ci="'+i+'"><span class="cx-kind">'+(it.type==="limit"?"제약 조건 보고 판단":"코드 보고 판단")+'</span>'+
+          '<p class="q-title">'+it.problem+'</p>'+(it.constraint?'<div class="constraint">'+esc(it.constraint)+'</div>':'')+(it.code?codeBlock(it.code):'')+
+          '<p class="prose"><b>'+it.q+'</b></p>'+
+          (p.cx[i]===undefined ? (p.hints[hk] ? '<p class="hint">힌트: '+it.hint+'</p>' : '<button class="hintbtn" data-h="'+hk+'">힌트 보기</button>') : '')+
+          choiceBlock(it, p.cx[i], "o")+'</div>';
+      }).join("");
+    b.querySelectorAll(".opt").forEach(o => o.onclick = () => { p.cx[o.closest(".q").dataset.ci] = +o.dataset.o; save(); render(); });
+    b.querySelectorAll(".hintbtn").forEach(h => h.onclick = () => { p.hints[h.dataset.h] = true; save(); render(); });
+  } else if (key === "interview") {
+    b.innerHTML = '<h3>실제 면접에서는 이렇게 물어봐요</h3><p class="iq">“'+t.interview.q+'”</p>'+
+      '<h3>이어지는 꼬리 질문</h3><ul class="follow">'+t.interview.followups.map(f => '<li>'+f+'</li>').join("")+'</ul>'+
+      '<p class="note">모범답안은 다음 단계에서 내 답변을 먼저 써본 뒤에 공개돼요.</p>';
+  } else if (key === "answer") {
+    const kws = t.interview.keywords;
+    const norm = s => s.toLowerCase().replace(/\s+/g,"");
+    const hit = k => k.match.some(m => norm(p.answer).includes(norm(m)));
+    const n = kws.filter(hit).length;
+    b.innerHTML = '<h3>질문</h3><p class="prose"><b>'+t.interview.q+'</b></p>'+
+      '<textarea id="ans" placeholder="면접관 앞이라고 생각하고 1분 분량으로 답해 보세요.">'+esc(p.answer)+'</textarea>'+
+      '<div class="row"><button class="btn primary" id="check"'+(p.answer.trim().length<10?' disabled':'')+'>모범답안과 비교하기</button><span class="note" id="cnt">'+p.answer.length+'자</span></div>'+
+      (checked ? '<h3>핵심 키워드 체크 <span class="score">'+n+'/'+kws.length+'</span></h3><div class="kw">'+kws.map(k => hit(k)?'<div><span class="ok">✓</span>'+k.label+'</div>':'<div><span class="no">✗</span>'+k.label+'</div>').join("")+'</div>'+
+        '<h3>모범답안</h3><div class="model"><p>'+t.interview.model+'</p></div>'+
+        '<h3>스스로 평가하기</h3><div class="rate">'+[["low","다시 공부할래요 · 내일 복습",1],["mid","절반쯤 · 3일 뒤",3],["high","자신 있어요 · 7일 뒤",7]].map(r => '<button data-r="'+r[0]+'" data-d="'+r[2]+'" class="'+(p.rating===r[0]?'sel':'')+'">'+r[1]+'</button>').join("")+'</div>'+
+        '<p class="note">평가에 따라 복습 날짜가 정해져요. 운영비 없이 돌리기 위해 AI 채점 대신 키워드 체크와 자기 평가를 씁니다.</p>' : '');
+    const ta = $("ans");
+    ta.oninput = () => { p.answer = ta.value; save(); $("check").disabled = ta.value.trim().length < 10; $("cnt").textContent = ta.value.length+"자"; };
+    $("check").onclick = () => { checked = true; render(); };
+    b.querySelectorAll(".rate button").forEach(r => r.onclick = () => { p.rating = r.dataset.r; p.next = addDays(+r.dataset.d); save(); render(); });
+  } else {
+    b.innerHTML = '<h3>이런 상황에서 만나요</h3><div class="scen"><b>상황</b> '+t.project.scenario+'</div>'+
+      '<h3>원인</h3><p class="prose">'+t.project.why+'</p>'+
+      '<h3>해결 방법</h3><ul class="fix">'+t.project.fixes.map(f => '<li><i>'+f[0]+'</i><span>'+f[1]+'</span></li>').join("")+'</ul>'+
+      '<h3>포트폴리오·면접에서 이렇게 말하기</h3><div class="resume"><p>'+t.project.resume+'</p></div>';
+  }
+  bindLang(b);
+}
+
+function render(){ renderHead(); renderBody(); renderRail(); }
+
+$("prev").onclick = () => { if (step > 0) { step--; render(); } };
+$("next").onclick = () => {
+  const p = P(cur), st = stepsOf(topic());
+  if (step < st.length - 1) { step++; render(); return; }
+  p.done = true; if (!p.next) p.next = addDays(p.rating==="high"?7:p.rating==="mid"?3:1);
+  touchDay(); save();
+  const nextT = TOPICS.find(t => !(S.progress[t.id] && S.progress[t.id].done));
+  if (nextT) { cur = nextT.id; step = 0; checked = false; }
+  render();
+};
+$("schemaBtn").onclick = () => { const box = $("schemaBox"); box.hidden = !box.hidden; $("schemaBtn").textContent = box.hidden ? "이 토픽의 JSON 데이터 보기" : "JSON 데이터 닫기"; };
+
+render();
+</script>

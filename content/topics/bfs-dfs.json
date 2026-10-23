@@ -1,0 +1,168 @@
+{
+  "id": "bfs-dfs",
+  "track": "알고리즘",
+  "level": 2,
+  "minutes": 15,
+  "title": "BFS와 DFS",
+  "summary": "그래프와 트리를 탐색하는 두 가지 방법",
+  "concept": {
+    "analogy": "미로에서 DFS는 한 길로 끝까지 가보고 막히면 돌아와 다른 길을 갑니다. BFS는 물이 퍼지듯 입구에서 가까운 칸부터 차례로 넓혀 갑니다.",
+    "definition": "==DFS==(깊이 우선 탐색)는 스택이나 재귀로 한 방향을 끝까지 탐색합니다. ==BFS==(너비 우선 탐색)는 ==큐==로 가까운 노드부터 방문해, 가중치 없는 그래프에서 ==최단 거리==를 찾습니다. 둘 다 같은 노드를 다시 방문하지 않도록 ==방문 체크==가 필요하며, 시간복잡도는 O(V + E)입니다.",
+    "terms": [
+      [
+        "V, E",
+        "노드(정점) 수와 간선 수"
+      ],
+      [
+        "방문 배열",
+        "이미 본 노드를 기록해 무한 반복 방지"
+      ],
+      [
+        "백트래킹",
+        "DFS 중 조건에 안 맞으면 되돌아가기"
+      ]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "// DOM도 트리! 조건에 맞는 가장 가까운 노드를 BFS로 찾기\nfunction findNearest(root, predicate) {\n  const queue = [root];\n  let head = 0;                          // shift() 대신 포인터로 O(1)\n  while (head < queue.length) {\n    const node = queue[head++];\n    if (predicate(node)) return node;\n    queue.push(...node.children);\n  }\n  return null;\n}",
+      "py": "from collections import deque\n\ndef bfs_distance(graph, start):\n    dist = {start: 0}                  # 방문 체크 겸 거리 기록\n    q = deque([start])\n    while q:\n        node = q.popleft()             # 큐: 먼저 넣은 것부터, O(1)\n        for nxt in graph[node]:\n            if nxt not in dist:\n                dist[nxt] = dist[node] + 1\n                q.append(nxt)\n    return dist\n\ngraph = {'A': ['B', 'C'], 'B': ['D'], 'C': ['D'], 'D': []}\nbfs_distance(graph, 'A')"
+    },
+    "output": {
+      "js": [],
+      "py": [
+        "{'A': 0, 'B': 1, 'C': 1, 'D': 2}"
+      ]
+    },
+    "explain": "BFS는 얕은 깊이부터 찾기 때문에 루트에서 가장 가까운 노드를 먼저 반환합니다. DOM이나 컴포넌트 트리는 사이클이 없어서 방문 체크가 필요 없지만, 일반 그래프에서는 반드시 넣어야 해요.",
+    "note": {
+      "py": "파이썬 예시는 사이클이 있을 수 있는 일반 그래프라서 방문 체크를 함께 하고, 시작점에서 각 노드까지의 최단 거리를 구합니다."
+    }
+  },
+  "quiz": [
+    {
+      "q": "가중치가 없는 미로에서 최단 경로를 찾을 때 적합한 방법은?",
+      "options": [
+        "BFS",
+        "DFS",
+        "이진 탐색",
+        "정렬"
+      ],
+      "answer": 0,
+      "explain": "BFS는 거리 1인 칸을 모두 본 뒤 거리 2로 넘어가므로, 처음 도착한 순간이 최단 거리입니다."
+    },
+    {
+      "q": "DFS 구현에 주로 쓰는 자료구조는?",
+      "options": [
+        "큐",
+        "힙",
+        "해시 테이블",
+        "스택 (또는 재귀)"
+      ],
+      "answer": 3,
+      "explain": "재귀 호출 자체가 콜스택을 쓰기 때문에, 재귀 DFS는 스택을 쓰는 것과 같습니다."
+    }
+  ],
+  "interview": {
+    "q": "BFS와 DFS의 차이와, 각각 어떤 문제에 적합한지 설명해 주세요.",
+    "followups": [
+      "방문 체크를 하지 않으면 어떤 문제가 생기나요?",
+      "재귀로 구현한 DFS의 단점은?"
+    ],
+    "model": "BFS는 큐를 이용해 시작 노드에서 가까운 노드부터 차례로 방문하는 방식으로, 가중치가 없는 그래프에서 최단 거리를 구할 때 적합합니다. DFS는 스택이나 재귀를 이용해 한 경로를 끝까지 탐색한 뒤 되돌아오는 방식으로, 모든 경로나 조합을 탐색하거나 백트래킹이 필요한 문제에 적합합니다. 둘 다 방문 체크로 같은 노드를 반복 방문하지 않게 해야 하고, 시간복잡도는 O(V + E)입니다. 재귀 DFS는 깊이가 깊으면 스택 오버플로가 날 수 있습니다.",
+    "keywords": [
+      {
+        "label": "BFS: 큐, 가까운 노드부터",
+        "match": [
+          "큐",
+          "너비",
+          "가까운"
+        ]
+      },
+      {
+        "label": "DFS: 스택·재귀, 깊이 우선",
+        "match": [
+          "스택",
+          "재귀",
+          "깊이"
+        ]
+      },
+      {
+        "label": "최단 거리",
+        "match": [
+          "최단"
+        ]
+      },
+      {
+        "label": "방문 체크",
+        "match": [
+          "방문"
+        ]
+      },
+      {
+        "label": "O(V + E)",
+        "match": [
+          "v + e",
+          "v+e"
+        ]
+      }
+    ]
+  },
+  "project": {
+    "scenario": "폴더 트리 UI에서 파일명으로 검색하면 해당 파일까지의 상위 폴더를 모두 펼쳐 보여줘야 한다.",
+    "why": "트리를 DFS로 내려가면서 지나온 경로를 기록하면, 파일을 찾는 순간 펼쳐야 할 폴더 목록을 바로 얻을 수 있습니다.",
+    "fixes": [
+      [
+        "DFS + 경로 기록",
+        "재귀로 내려가며 path 배열에 폴더 id를 push, 돌아올 때 pop"
+      ],
+      [
+        "펼침 상태",
+        "찾은 경로의 폴더 id들을 expanded Set에 추가"
+      ],
+      [
+        "깊은 트리",
+        "깊이가 아주 깊다면 재귀 대신 명시적 스택으로 구현"
+      ]
+    ],
+    "resume": "폴더 트리 검색 기능을 DFS와 경로 기록으로 구현해, 검색 결과의 상위 폴더가 자동으로 펼쳐지도록 만들었습니다."
+  },
+  "complexity": {
+    "note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.",
+    "items": [
+      {
+        "type": "limit",
+        "problem": "N×M 격자 미로에서 출발점부터 도착점까지 최소 몇 칸을 이동해야 하는지 구하세요.",
+        "constraint": "N, M ≤ 1,000 · 제한 시간 1초",
+        "q": "BFS로 풀 때의 시간복잡도는?",
+        "options": [
+          "O((N · M)²)",
+          "O(N + M)",
+          "O(2^(N·M))",
+          "O(N · M)"
+        ],
+        "answer": 3,
+        "hint": "정점(칸) 수 V와 간선 수 E를 N, M으로 나타내 보세요.",
+        "explain": "칸이 V = N·M = 10⁶개, 칸마다 상하좌우 간선이 최대 4개라 E ≈ 4V입니다. O(V + E) = O(N·M)이므로 충분히 통과해요."
+      },
+      {
+        "type": "code",
+        "problem": "그래프를 V×V 인접 행렬로 저장하고 BFS를 하는 코드입니다.",
+        "code": {
+          "js": "while (head < queue.length) {\n  const u = queue[head++];\n  for (let v = 0; v < V; v++) {\n    if (adj[u][v] && !visited[v]) {\n      visited[v] = true;\n      queue.push(v);\n    }\n  }\n}",
+          "py": "while q:\n    u = q.popleft()\n    for v in range(V):\n        if adj[u][v] and not visited[v]:\n            visited[v] = True\n            q.append(v)"
+        },
+        "q": "이 BFS의 시간복잡도는?",
+        "options": [
+          "O(V + E)",
+          "O(E)",
+          "O(V log V)",
+          "O(V²)"
+        ],
+        "answer": 3,
+        "hint": "한 정점의 이웃을 찾을 때 몇 칸을 확인하나요?",
+        "explain": "인접 행렬에서는 이웃을 찾으려고 매번 V칸을 다 확인해서 O(V²)입니다. 간선이 적은 그래프라면 인접 리스트로 바꿔 O(V + E)로 줄일 수 있어요."
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "foo",
+  "track": "CS",
+  "level": 1,
+  "minutes": 10,
+  "title": "완전히 유효한 토픽",
+  "summary": "index.json의 order에는 없고, order의 ghost는 파일이 없다",
+  "concept": {
+    "analogy": "비유",
+    "definition": "정의",
+    "terms": [["용어", "설명"]]
+  },
+  "apply": {
+    "code": { "js": "console.log(1);" },
+    "output": { "js": ["1"] },
+    "explain": "설명"
+  },
+  "quiz": [
+    {
+      "q": "질문",
+      "options": ["A", "B"],
+      "answer": 0,
+      "explain": "해설"
+    }
+  ],
+  "interview": {
+    "q": "면접 질문",
+    "followups": ["꼬리 질문"],
+    "model": "모범답안",
+    "keywords": [{ "label": "키워드", "match": ["키워드"] }]
+  },
+  "project": {
+    "scenario": "상황",
+    "why": "원인",
+    "fixes": [["이름", "설명"]],
+    "resume": "한 문장"
+  }
+}
