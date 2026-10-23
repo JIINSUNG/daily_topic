@@ -49,43 +49,49 @@ export function HomeView({ topics }: { topics: Topic[] }) {
         </div>
       </header>
 
-      <section className="card" style={{ padding: 20 }}>
-        {nextTopic ? (
-          <Link href={`/topics/${nextTopic.id}/concept`} className="btn primary" style={{ display: "inline-block" }}>
-            이어서 학습 — {nextTopic.title}
-          </Link>
-        ) : (
-          <p className="hint">모든 토픽을 완료했어요! 오늘 복습할 토픽을 확인해보세요.</p>
-        )}
-      </section>
-
-      <section className="rail-sec">
-        <h2>오늘 복습할 토픽</h2>
-        <div className="tlist">
-          {dueTopics.length === 0 ? (
-            <p className="empty">오늘 복습할 토픽이 없어요.</p>
+      <main style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <section className="card" style={{ padding: 20 }}>
+          {nextTopic ? (
+            <Link
+              href={`/topics/${nextTopic.id}/concept`}
+              className="btn primary"
+              style={{ display: "inline-block" }}
+            >
+              이어서 학습 — {nextTopic.title}
+            </Link>
           ) : (
-            dueTopics.map((t) => (
-              <Link key={t.id} href={`/topics/${t.id}/concept`} className="titem">
-                <span className="dot done" />
-                <span className="nm">
-                  {t.title}
-                  <small>
-                    {t.track} · {LEVEL_LABEL[t.level]}
-                  </small>
-                </span>
-                <span className="due">복습</span>
-              </Link>
-            ))
+            <p className="hint">모든 토픽을 완료했어요! 오늘 복습할 토픽을 확인해보세요.</p>
           )}
-        </div>
-      </section>
+        </section>
 
-      <p style={{ textAlign: "center" }}>
-        <Link href="/topics" className="btn">
-          전체 토픽 보기
-        </Link>
-      </p>
+        <section className="rail-sec">
+          <h2>오늘 복습할 토픽</h2>
+          <div className="tlist">
+            {dueTopics.length === 0 ? (
+              <p className="empty">오늘 복습할 토픽이 없어요.</p>
+            ) : (
+              dueTopics.map((t) => (
+                <Link key={t.id} href={`/topics/${t.id}/concept`} className="titem">
+                  <span className="dot done" />
+                  <span className="nm">
+                    {t.title}
+                    <small>
+                      {t.track} · {LEVEL_LABEL[t.level]}
+                    </small>
+                  </span>
+                  <span className="due">복습</span>
+                </Link>
+              ))
+            )}
+          </div>
+        </section>
+
+        <p style={{ textAlign: "center" }}>
+          <Link href="/topics" className="btn">
+            전체 토픽 보기
+          </Link>
+        </p>
+      </main>
     </div>
   );
 }

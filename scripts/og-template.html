@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;700&display=swap"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+      }
+      body {
+        background: #f2f5f8;
+        font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        width: 1080px;
+        height: 510px;
+        background: #ffffff;
+        border: 2px solid #d8dee6;
+        border-radius: 28px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 72px 80px;
+        gap: 22px;
+      }
+      .steps {
+        display: flex;
+        gap: 10px;
+      }
+      .steps span {
+        font-size: 15px;
+        color: #5a6676;
+        background: #f2f5f8;
+        border: 1px solid #d8dee6;
+        border-radius: 999px;
+        padding: 6px 16px;
+      }
+      h1 {
+        font-family: "Black Han Sans", sans-serif;
+        font-weight: 400;
+        font-size: 92px;
+        color: #16202c;
+        line-height: 1.1;
+      }
+      h1 span {
+        color: #2b50d6;
+      }
+      p {
+        font-size: 30px;
+        color: #5a6676;
+      }
+      mark {
+        background: #ffe36a;
+        color: #16202c;
+        padding: 0 8px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="steps">
+        <span>개념</span>
+        <span>응용</span>
+        <span>문제</span>
+        <span>면접</span>
+        <span>내 답변</span>
+        <span>프로젝트</span>
+      </div>
+      <h1>하루 한 <span>토픽</span></h1>
+      <p>알고리즘·CS·프론트엔드를 <mark>하루 15분씩</mark> 학습하는 웹 서비스</p>
+    </div>
+  </body>
+</html>

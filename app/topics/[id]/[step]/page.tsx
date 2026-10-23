@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { loadContent } from "@/lib/content/load";
 import { stepsOf, isStepKey } from "@/lib/content/steps";
@@ -7,6 +8,22 @@ import { TopicStepView, type HighlightedMap } from "@/components/topic/TopicStep
 export function generateStaticParams() {
   const { topics } = loadContent();
   return topics.flatMap((t) => stepsOf(t).map((s) => ({ id: t.id, step: s.key })));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; step: string }>;
+}): Promise<Metadata> {
+  const { id, step } = await params;
+  const { topics } = loadContent();
+  const topic = topics.find((t) => t.id === id);
+  if (!topic) return {};
+  const stepLabel = stepsOf(topic).find((s) => s.key === step)?.label;
+  return {
+    title: stepLabel ? `${topic.title} · ${stepLabel}` : topic.title,
+    description: topic.summary,
+  };
 }
 
 export default async function TopicStepPage({

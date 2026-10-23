@@ -30,43 +30,52 @@ export function TopicsListView({ topics, tracks }: { topics: Topic[]; tracks: Tr
         </Link>
       </header>
 
-      <div className="filters" role="group" aria-label="분야 필터">
-        <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
-          전체 {topics.length}
-        </button>
-        {tracks.map((tr) => (
-          <button key={tr} type="button" aria-pressed={filter === tr} onClick={() => setFilter(tr)}>
-            {tr} {topics.filter((t) => t.track === tr).length}
+      <main style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="filters" role="group" aria-label="분야 필터">
+          <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
+            전체 {topics.length}
           </button>
-        ))}
-      </div>
+          {tracks.map((tr) => (
+            <button
+              key={tr}
+              type="button"
+              aria-pressed={filter === tr}
+              onClick={() => setFilter(tr)}
+            >
+              {tr} {topics.filter((t) => t.track === tr).length}
+            </button>
+          ))}
+        </div>
 
-      {shownTracks.map((tr) => {
-        const list = topics.filter((t) => t.track === tr).sort((a, b) => a.level - b.level);
-        return (
-          <section key={tr}>
-            {filter === "all" && <p className="track-head">{tr}</p>}
-            <div className="tlist">
-              {list.map((t) => {
-                const p = getProgress(t.id);
-                const dotCls = p.done ? "done" : p.seen.length > 0 ? "part" : "";
-                return (
-                  <Link key={t.id} href={`/topics/${t.id}/concept`} className="titem">
-                    <span className={`dot ${dotCls}`} />
-                    <span className="nm">
-                      {t.title}
-                      <small>
-                        {t.track} · {LEVEL_LABEL[t.level]}
-                      </small>
-                    </span>
-                    {p.done && p.next && <span className="chip">{p.next.slice(5).replace("-", "/")}</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
+        {shownTracks.map((tr) => {
+          const list = topics.filter((t) => t.track === tr).sort((a, b) => a.level - b.level);
+          return (
+            <section key={tr}>
+              {filter === "all" && <p className="track-head">{tr}</p>}
+              <div className="tlist">
+                {list.map((t) => {
+                  const p = getProgress(t.id);
+                  const dotCls = p.done ? "done" : p.seen.length > 0 ? "part" : "";
+                  return (
+                    <Link key={t.id} href={`/topics/${t.id}/concept`} className="titem">
+                      <span className={`dot ${dotCls}`} />
+                      <span className="nm">
+                        {t.title}
+                        <small>
+                          {t.track} · {LEVEL_LABEL[t.level]}
+                        </small>
+                      </span>
+                      {p.done && p.next && (
+                        <span className="chip">{p.next.slice(5).replace("-", "/")}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </main>
     </div>
   );
 }
