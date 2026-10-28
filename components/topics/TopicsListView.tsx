@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useProgress } from "@/lib/progress/store";
 import type { Topic, Track } from "@/lib/content/schema";
@@ -13,8 +12,7 @@ const LEVEL_LABEL: Record<number, string> = {
 };
 
 export function TopicsListView({ topics, tracks }: { topics: Topic[]; tracks: Track[] }) {
-  const { getProgress } = useProgress();
-  const [filter, setFilter] = useState<Track | "all">("all");
+  const { getProgress, track: filter, setTrack: setFilter } = useProgress();
 
   const shownTracks = filter === "all" ? tracks : [filter];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useProgress } from "@/lib/progress/store";
 import type { Topic } from "@/lib/content/schema";
 import type { Step, StepKey } from "@/lib/content/steps";
@@ -45,6 +46,9 @@ export function TopicStepView({
 
   return (
     <div className="wrap">
+      <Link href="/topics" className="btn" style={{ alignSelf: "flex-start" }}>
+        ← 전체 토픽
+      </Link>
       <main className="card">
         <div className="card-head">
           <div className="meta">

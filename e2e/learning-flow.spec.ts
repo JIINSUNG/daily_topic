@@ -48,3 +48,19 @@ test("내 답변 작성 → 비교하기 → 모범답안 공개 → 자신 있�
   await page.reload();
   await expect(page.getByRole("button", { name: "학습 완료됨" })).toBeDisabled();
 });
+
+test("홈에서 분야(알고리즘)를 고르면 이어서 학습이 그 분야로 바뀌고, 토픽 화면에서 전체 토픽으로 돌아갈 수 있다", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: /^알고리즘/ }).click();
+  await expect(page.getByRole("button", { name: /^알고리즘/ })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("link", { name: /이어서 학습/ }).click();
+  await expect(page).toHaveURL(/\/topics\/[^/]+\/concept$/);
+  await expect(page.locator(".card-head .chip").nth(1)).toHaveText("알고리즘");
+
+  await page.getByRole("link", { name: /전체 토픽/ }).click();
+  await expect(page).toHaveURL(/\/topics$/);
+  // 홈에서 고른 분야가 전체 토픽 목록에도 그대로 유지된다.
+  await expect(page.getByRole("button", { name: /^알고리즘/ })).toHaveAttribute("aria-pressed", "true");
+});

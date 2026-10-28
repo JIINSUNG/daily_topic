@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useProgress } from "@/lib/progress/store";
 import { calcStreak } from "@/lib/progress/streak";
 import { getDueTopicIds } from "@/lib/progress/schedule";
-import type { Topic } from "@/lib/content/schema";
+import type { Topic, Track } from "@/lib/content/schema";
 
 const LEVEL_LABEL: Record<number, string> = {
   1: "Lv.1 입문",
@@ -13,16 +13,18 @@ const LEVEL_LABEL: Record<number, string> = {
   4: "Lv.4 심화",
 };
 
-export function HomeView({ topics }: { topics: Topic[] }) {
-  const { days, getProgress } = useProgress();
+export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] }) {
+  const { days, getProgress, track, setTrack } = useProgress();
   const today = new Date();
+
+  const shownTopics = track === "all" ? topics : topics.filter((t) => t.track === track);
 
   const progressById = Object.fromEntries(topics.map((t) => [t.id, getProgress(t.id)]));
   const streak = calcStreak(days, today);
-  const doneCount = topics.filter((t) => progressById[t.id].done).length;
-  const dueIds = getDueTopicIds(topics, progressById, today);
-  const dueTopics = topics.filter((t) => dueIds.includes(t.id));
-  const nextTopic = topics.find((t) => !progressById[t.id].done);
+  const doneCount = shownTopics.filter((t) => progressById[t.id].done).length;
+  const dueIds = getDueTopicIds(shownTopics, progressById, today);
+  const dueTopics = shownTopics.filter((t) => dueIds.includes(t.id));
+  const nextTopic = shownTopics.find((t) => !progressById[t.id].done);
 
   return (
     <div className="wrap">
@@ -38,7 +40,7 @@ export function HomeView({ topics }: { topics: Topic[] }) {
           </div>
           <div className="stat">
             <b>
-              {doneCount}/{topics.length}
+              {doneCount}/{shownTopics.length}
             </b>
             <span>완료 토픽</span>
           </div>
@@ -50,6 +52,17 @@ export function HomeView({ topics }: { topics: Topic[] }) {
       </header>
 
       <main style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="filters" role="group" aria-label="분야 필터">
+          <button type="button" aria-pressed={track === "all"} onClick={() => setTrack("all")}>
+            전체 {topics.length}
+          </button>
+          {tracks.map((tr) => (
+            <button key={tr} type="button" aria-pressed={track === tr} onClick={() => setTrack(tr)}>
+              {tr} {topics.filter((t) => t.track === tr).length}
+            </button>
+          ))}
+        </div>
+
         <section className="card" style={{ padding: 20 }}>
           {nextTopic ? (
             <Link

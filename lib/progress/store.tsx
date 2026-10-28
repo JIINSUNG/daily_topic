@@ -8,6 +8,7 @@ import { createContext, useCallback, useContext, useMemo, useSyncExternalStore }
 import { loadState, saveState, type StorageLike, type Versioned } from "./storage";
 import { nextReviewDate, type Rating } from "./schedule";
 import type { StepKey } from "../content/steps";
+import type { Track } from "../content/schema";
 
 export type LangPref = "js" | "py";
 
@@ -26,14 +27,17 @@ function blankProgress(): TopicProgress {
   return { seen: [], quiz: {}, cx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
 }
 
+export type TrackFilter = Track | "all";
+
 interface AppState extends Versioned {
   version: 1;
   progress: Record<string, TopicProgress>;
   days: string[];
   lang: LangPref;
+  track: TrackFilter;
 }
 
-const DEFAULT_STATE: AppState = { version: 1, progress: {}, days: [], lang: "js" };
+const DEFAULT_STATE: AppState = { version: 1, progress: {}, days: [], lang: "js", track: "all" };
 const STORAGE_KEY = "daily-topic-progress";
 
 function ymd(d: Date): string {
@@ -81,6 +85,8 @@ function getServerSnapshot(): AppState {
 interface ProgressContextValue {
   lang: LangPref;
   setLang: (lang: LangPref) => void;
+  track: TrackFilter;
+  setTrack: (track: TrackFilter) => void;
   days: string[];
   getProgress: (topicId: string) => TopicProgress;
   markSeen: (topicId: string, step: StepKey) => void;
@@ -175,11 +181,14 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setLang = useCallback((lang: LangPref) => update((prev) => ({ ...prev, lang })), [update]);
+  const setTrack = useCallback((track: TrackFilter) => update((prev) => ({ ...prev, track })), [update]);
 
   const value = useMemo<ProgressContextValue>(
     () => ({
       lang: state.lang,
       setLang,
+      track: state.track,
+      setTrack,
       days: state.days,
       getProgress,
       markSeen,
@@ -190,7 +199,21 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       setRating,
       complete,
     }),
-    [state.lang, state.days, setLang, getProgress, markSeen, setQuizAnswer, setCxAnswer, setHint, setAnswerText, setRating, complete],
+    [
+      state.lang,
+      state.track,
+      state.days,
+      setLang,
+      setTrack,
+      getProgress,
+      markSeen,
+      setQuizAnswer,
+      setCxAnswer,
+      setHint,
+      setAnswerText,
+      setRating,
+      complete,
+    ],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;
