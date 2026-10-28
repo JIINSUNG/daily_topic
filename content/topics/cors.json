@@ -1,0 +1,59 @@
+{
+  "id": "cors",
+  "track": "CS",
+  "level": 2,
+  "minutes": 10,
+  "title": "CORS (교차 출처 리소스 공유)",
+  "summary": "브라우저가 다른 출처로의 요청 결과를 막거나 허용하는 규칙",
+  "concept": {
+    "analogy": "다른 회사 건물에 들어가려면 미리 방문 허가증이 있어야 하는 것과 비슷해요. 브라우저는 보안을 위해 기본적으로 다른 '출처'로 보낸 요청의 응답을, 서버의 허가(응답 헤더)가 없으면 스크립트에 넘기지 않습니다.",
+    "definition": "==CORS==는 브라우저가 ==출처(origin)==가 다른 서버로 보낸 요청의 응답을 스크립트에 넘겨도 되는지, ==서버가 헤더로 허용 여부를 알려주는== 메커니즘입니다. 요청 자체를 막는 게 아니라 ==응답을 읽게 해줄지==를 브라우저가 판단합니다. 메서드나 헤더가 단순 요청 조건을 벗어나면, 브라우저가 실제 요청 전에 ==preflight(OPTIONS)== 요청을 먼저 보내 허용 여부를 확인합니다.",
+    "terms": [
+      ["출처(Origin)", "프로토콜 + 도메인 + 포트가 모두 같아야 같은 출처"],
+      ["Preflight", "실제 요청 전에 OPTIONS로 허용 여부를 먼저 확인하는 요청"],
+      ["Access-Control-Allow-Origin", "이 출처의 요청을 허용한다고 서버가 응답에 담는 헤더"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "fetch(\"https://api.other.com/users\")\n  .then((res) => res.json())\n  .then(console.log)\n  .catch((err) => console.error(\"CORS 에러:\", err));\n\n// 서버 응답 헤더에 아래가 없거나 다르면 브라우저가 응답을 막는다\n// Access-Control-Allow-Origin: https://myapp.com"
+    },
+    "output": {},
+    "explain": "실제 요청은 서버까지 도달하고 서버도 정상 처리하지만, 응답 헤더에 Access-Control-Allow-Origin이 없거나 요청한 출처와 다르면 브라우저가 응답 내용을 자바스크립트에 넘기지 않고 콘솔에 CORS 에러를 띄웁니다. 즉 CORS는 서버를 보호하는 게 아니라 ==브라우저가 사용자를 보호==하는 장치입니다."
+  },
+  "quiz": [
+    {
+      "q": "CORS가 실제로 막는 대상은 무엇인가요?",
+      "options": ["서버가 요청을 받는 것 자체", "브라우저가 응답을 스크립트에 전달하는 것", "모든 네트워크 요청", "같은 출처로의 요청"],
+      "answer": 1,
+      "explain": "서버는 요청을 정상적으로 처리할 수도 있지만, 브라우저가 응답 헤더를 보고 스크립트에 결과를 넘길지 말지를 결정합니다."
+    },
+    {
+      "q": "Preflight 요청이 추가로 필요해지는 경우는?",
+      "options": ["GET으로 단순 조회할 때", "Content-Type: application/json으로 POST할 때", "같은 출처에 요청할 때", "img 태그로 이미지를 불러올 때"],
+      "answer": 1,
+      "explain": "단순 요청 조건(GET/HEAD/POST + 제한된 헤더)을 벗어나면 브라우저가 실제 요청 전에 OPTIONS로 허용 여부를 먼저 확인합니다. application/json Content-Type은 단순 요청 조건에 포함되지 않습니다."
+    }
+  ],
+  "interview": {
+    "q": "CORS가 왜 필요한지, 그리고 preflight 요청이 발생하는 조건을 설명해 주세요.",
+    "followups": ["서버에서 CORS 에러를 해결하려면 어떻게 해야 하나요?", "쿠키를 포함한 요청에서 CORS는 어떻게 다르게 동작하나요?"],
+    "model": "브라우저는 동일 출처 정책에 따라 기본적으로 다른 출처로의 요청 결과를 스크립트가 읽지 못하게 막습니다. CORS는 서버가 응답 헤더(Access-Control-Allow-Origin 등)로 어떤 출처의 요청을 허용할지 명시하는 메커니즘으로, 이 헤더가 없거나 요청 출처와 다르면 브라우저가 응답을 막습니다. GET/HEAD/POST 외의 메서드를 쓰거나 Content-Type이 application/json처럼 단순 요청 조건을 벗어나면, 브라우저는 실제 요청 전에 OPTIONS 메서드로 preflight 요청을 보내 서버가 이 요청을 허용하는지 먼저 확인합니다.",
+    "keywords": [
+      { "label": "동일 출처 정책", "match": ["동일 출처", "same-origin", "출처"] },
+      { "label": "서버가 헤더로 허용", "match": ["access-control", "헤더", "허용"] },
+      { "label": "브라우저가 응답을 막음", "match": ["브라우저", "막"] },
+      { "label": "preflight 조건", "match": ["preflight", "options"] }
+    ]
+  },
+  "project": {
+    "scenario": "프론트엔드에서 다른 도메인의 API를 호출했더니 콘솔에 CORS 에러가 뜨고 데이터를 받아오지 못한다.",
+    "why": "API 서버 응답에 요청 출처를 허용하는 Access-Control-Allow-Origin 헤더가 없거나, 프론트엔드 출처와 일치하지 않아 브라우저가 응답을 차단했기 때문입니다.",
+    "fixes": [
+      ["서버 헤더 추가", "API 서버 응답에 Access-Control-Allow-Origin으로 허용할 출처를 명시"],
+      ["개발 중 프록시", "로컬 개발 서버에 프록시를 두어 같은 출처처럼 요청"],
+      ["인증 요청 설정", "쿠키를 쓰는 요청은 credentials 옵션과 Access-Control-Allow-Credentials를 함께 맞춤"]
+    ],
+    "resume": "다른 도메인의 API 연동 중 CORS 에러를 분석해 서버 응답 헤더 설정을 조정하고, 개발 환경에서는 프록시를 구성해 로컬 작업 흐름을 개선했습니다."
+  }
+}
