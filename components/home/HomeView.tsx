@@ -20,7 +20,7 @@ interface EssaySummary {
 }
 
 export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: Track[]; essays: EssaySummary[] }) {
-  const { days, getProgress, track, setTrack, getEssayProgress } = useProgress();
+  const { days, getProgress, track, setTrack, getEssayProgress, mock } = useProgress();
   const today = new Date();
 
   const shownTopics = track === "all" ? topics : topics.filter((t) => t.track === track);
@@ -62,6 +62,10 @@ export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: 
           <div className="stat">
             <b>{dueTopics.length}</b>
             <span>오늘 복습</span>
+          </div>
+          <div className="stat">
+            <b>{mock.count}회</b>
+            <span>모의면접</span>
           </div>
         </div>
       </header>
