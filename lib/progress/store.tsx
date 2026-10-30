@@ -37,18 +37,37 @@ function blankEssayProgress(): EssayProgress {
   return { draft: "", updatedAt: null };
 }
 
+/** 모의면접은 세션 내용 자체는 저장하지 않고(매번 랜덤 연습), 횟수·마지막 날짜만 기록한다. */
+export interface MockInterviewStat {
+  count: number;
+  lastDate: string | null;
+}
+
+function blankMockStat(): MockInterviewStat {
+  return { count: 0, lastDate: null };
+}
+
 export type TrackFilter = Track | "all";
 
 interface AppState extends Versioned {
   version: 1;
   progress: Record<string, TopicProgress>;
   essays: Record<string, EssayProgress>;
+  mock: MockInterviewStat;
   days: string[];
   lang: LangPref;
   track: TrackFilter;
 }
 
-const DEFAULT_STATE: AppState = { version: 1, progress: {}, essays: {}, days: [], lang: "js", track: "all" };
+const DEFAULT_STATE: AppState = {
+  version: 1,
+  progress: {},
+  essays: {},
+  mock: blankMockStat(),
+  days: [],
+  lang: "js",
+  track: "all",
+};
 const STORAGE_KEY = "daily-topic-progress";
 
 function ymd(d: Date): string {
@@ -109,6 +128,8 @@ interface ProgressContextValue {
   complete: (topicId: string) => void;
   getEssayProgress: (essayId: string) => EssayProgress;
   setEssayDraft: (essayId: string, text: string) => void;
+  mock: MockInterviewStat;
+  recordMockInterview: () => void;
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
@@ -212,6 +233,17 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     [update],
   );
 
+  const recordMockInterview = useCallback(() => {
+    update((prev) => {
+      const today = ymd(new Date());
+      return {
+        ...prev,
+        mock: { count: prev.mock.count + 1, lastDate: today },
+        days: prev.days.includes(today) ? prev.days : [...prev.days, today],
+      };
+    });
+  }, [update]);
+
   const value = useMemo<ProgressContextValue>(
     () => ({
       lang: state.lang,
@@ -229,11 +261,14 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       complete,
       getEssayProgress,
       setEssayDraft,
+      mock: state.mock,
+      recordMockInterview,
     }),
     [
       state.lang,
       state.track,
       state.days,
+      state.mock,
       setLang,
       setTrack,
       getProgress,
@@ -246,6 +281,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       complete,
       getEssayProgress,
       setEssayDraft,
+      recordMockInterview,
     ],
   );
 

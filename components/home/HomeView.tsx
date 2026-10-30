@@ -111,6 +111,9 @@ export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] 
             <Link href="/guides" className="btn">
               면접 가이드 보기
             </Link>
+            <Link href="/mock-interview" className="btn">
+              모의면접 보기
+            </Link>
           </div>
         </section>
 
