@@ -13,8 +13,14 @@ const LEVEL_LABEL: Record<number, string> = {
   4: "Lv.4 심화",
 };
 
-export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] }) {
-  const { days, getProgress, track, setTrack } = useProgress();
+interface EssaySummary {
+  id: string;
+  category: string;
+  question: string;
+}
+
+export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: Track[]; essays: EssaySummary[] }) {
+  const { days, getProgress, track, setTrack, getEssayProgress } = useProgress();
   const today = new Date();
 
   const shownTopics = track === "all" ? topics : topics.filter((t) => t.track === track);
@@ -25,6 +31,15 @@ export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] 
   const dueIds = getDueTopicIds(shownTopics, progressById, today);
   const dueTopics = shownTopics.filter((t) => dueIds.includes(t.id));
   const nextTopic = shownTopics.find((t) => !progressById[t.id].done);
+
+  // 안 쓴 문항을 먼저, 그다음 오래전에 고친 문항 순으로 추천한다(매일 조금씩 돌려쓰도록).
+  const essayProgressById = Object.fromEntries(essays.map((e) => [e.id, getEssayProgress(e.id)]));
+  const nextEssay = [...essays].sort((a, b) => {
+    const pa = essayProgressById[a.id];
+    const pb = essayProgressById[b.id];
+    if (!pa.updatedAt !== !pb.updatedAt) return pa.updatedAt ? 1 : -1;
+    return (pa.updatedAt ?? "").localeCompare(pb.updatedAt ?? "");
+  })[0];
 
   return (
     <div className="wrap">
@@ -105,9 +120,15 @@ export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] 
             CS·알고리즘 토픽 말고도, 자기소개서 문항을 매일 조금씩 써보거나 인성·기술면접 공략 팁을 확인해보세요.
           </p>
           <div className="row">
-            <Link href="/essays" className="btn primary">
-              자소서 문항 써보기
-            </Link>
+            {nextEssay ? (
+              <Link href={`/essays/${nextEssay.id}`} className="btn primary">
+                오늘 쓸 문항 — {nextEssay.category}
+              </Link>
+            ) : (
+              <Link href="/essays" className="btn primary">
+                자소서 문항 써보기
+              </Link>
+            )}
             <Link href="/guides" className="btn">
               면접 가이드 보기
             </Link>

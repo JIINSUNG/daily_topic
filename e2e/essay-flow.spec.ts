@@ -2,7 +2,10 @@ import { test, expect } from "@playwright/test";
 
 test("홈 → 자소서 문항 목록 → 문항 작성 → 새로고침 후에도 초안 유지 → 면접 가이드 확인", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "자소서 문항 써보기" }).click();
+  await expect(page.getByRole("link", { name: /오늘 쓸 문항/ })).toBeVisible();
+
+  // 홈 카드는 "오늘 쓸 문항"을 추천해서(진행 상태에 따라 어느 문항인지 바뀜) 목록 페이지로 직접 이동한다.
+  await page.goto("/essays");
   await expect(page).toHaveURL(/\/essays$/);
 
   await page.locator(".titem", { hasText: "지원한 이유" }).click();
