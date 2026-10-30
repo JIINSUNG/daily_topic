@@ -27,17 +27,28 @@ function blankProgress(): TopicProgress {
   return { seen: [], quiz: {}, cx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
 }
 
+/** 자기소개서 문항 하나에 대한 내 초안. 매일 조금씩 이어 쓸 수 있게 날짜만 같이 기록한다. */
+export interface EssayProgress {
+  draft: string;
+  updatedAt: string | null;
+}
+
+function blankEssayProgress(): EssayProgress {
+  return { draft: "", updatedAt: null };
+}
+
 export type TrackFilter = Track | "all";
 
 interface AppState extends Versioned {
   version: 1;
   progress: Record<string, TopicProgress>;
+  essays: Record<string, EssayProgress>;
   days: string[];
   lang: LangPref;
   track: TrackFilter;
 }
 
-const DEFAULT_STATE: AppState = { version: 1, progress: {}, days: [], lang: "js", track: "all" };
+const DEFAULT_STATE: AppState = { version: 1, progress: {}, essays: {}, days: [], lang: "js", track: "all" };
 const STORAGE_KEY = "daily-topic-progress";
 
 function ymd(d: Date): string {
@@ -96,6 +107,8 @@ interface ProgressContextValue {
   setAnswerText: (topicId: string, text: string) => void;
   setRating: (topicId: string, rating: Rating) => void;
   complete: (topicId: string) => void;
+  getEssayProgress: (essayId: string) => EssayProgress;
+  setEssayDraft: (essayId: string, text: string) => void;
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
@@ -183,6 +196,22 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const setLang = useCallback((lang: LangPref) => update((prev) => ({ ...prev, lang })), [update]);
   const setTrack = useCallback((track: TrackFilter) => update((prev) => ({ ...prev, track })), [update]);
 
+  const getEssayProgress = useCallback((essayId: string) => state.essays[essayId] ?? blankEssayProgress(), [state.essays]);
+
+  const setEssayDraft = useCallback(
+    (essayId: string, text: string) => {
+      update((prev) => {
+        const today = ymd(new Date());
+        return {
+          ...prev,
+          essays: { ...prev.essays, [essayId]: { draft: text, updatedAt: today } },
+          days: prev.days.includes(today) ? prev.days : [...prev.days, today],
+        };
+      });
+    },
+    [update],
+  );
+
   const value = useMemo<ProgressContextValue>(
     () => ({
       lang: state.lang,
@@ -198,6 +227,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       setAnswerText,
       setRating,
       complete,
+      getEssayProgress,
+      setEssayDraft,
     }),
     [
       state.lang,
@@ -213,6 +244,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       setAnswerText,
       setRating,
       complete,
+      getEssayProgress,
+      setEssayDraft,
     ],
   );
 

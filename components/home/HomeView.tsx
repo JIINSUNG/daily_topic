@@ -99,6 +99,21 @@ export function HomeView({ topics, tracks }: { topics: Topic[]; tracks: Track[] 
           </div>
         </section>
 
+        <section className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+          <h2 style={{ margin: 0 }}>자소서·면접 준비</h2>
+          <p className="note" style={{ margin: 0 }}>
+            CS·알고리즘 토픽 말고도, 자기소개서 문항을 매일 조금씩 써보거나 인성·기술면접 공략 팁을 확인해보세요.
+          </p>
+          <div className="row">
+            <Link href="/essays" className="btn primary">
+              자소서 문항 써보기
+            </Link>
+            <Link href="/guides" className="btn">
+              면접 가이드 보기
+            </Link>
+          </div>
+        </section>
+
         <p style={{ textAlign: "center" }}>
           <Link href="/topics" className="btn">
             전체 토픽 보기
