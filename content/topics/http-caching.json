@@ -37,7 +37,7 @@
   ],
   "interview": {
     "q": "브라우저가 리소스를 캐싱하는 과정과, Cache-Control과 ETag의 역할을 설명해 주세요.",
-    "followups": ["배포 후 사용자가 예전 버전의 JS 파일을 계속 쓰는 문제는 왜 생기고 어떻게 막나요?", "no-cache와 no-store의 차이는?"],
+    "followups": ["배포 후 사용자가 예전 버전의 JS 파일을 계속 쓰는 문제는 왜 생기고 어떻게 막나요?", "no-cache와 no-store의 차이는?", "ETag와 Last-Modified 중 하나만 쓴다면 어느 걸 우선하는 게 좋고 왜인가요?", "CDN 캐시와 브라우저 캐시는 같은 Cache-Control을 다르게 해석할 수 있나요?", "강제 새로고침(Ctrl+Shift+R)은 일반 새로고침과 캐시 처리 측면에서 어떻게 다른가요?"],
     "model": "서버는 응답의 Cache-Control 헤더로 브라우저가 리소스를 얼마나 재사용할지(max-age) 지정합니다. max-age가 지나지 않은 신선한 캐시는 네트워크 요청 없이 바로 쓰입니다. 신선도가 끝나면 브라우저는 ETag 값을 If-None-Match 헤더에 담아 서버에 재검증을 요청하고, 서버는 리소스가 바뀌지 않았으면 본문 없이 304 Not Modified를 응답해 캐시를 계속 쓰게 합니다. 바뀌었다면 200과 함께 새 리소스와 새 ETag를 내려줍니다.",
     "keywords": [
       { "label": "Cache-Control / max-age", "match": ["cache-control", "max-age"] },
