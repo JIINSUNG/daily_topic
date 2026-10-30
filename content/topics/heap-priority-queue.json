@@ -1,0 +1,99 @@
+{
+  "id": "heap-priority-queue",
+  "track": "알고리즘",
+  "level": 2,
+  "minutes": 15,
+  "title": "힙과 우선순위 큐",
+  "summary": "항상 최솟값·최댓값을 O(log n)에 꺼내는 자료구조",
+  "concept": {
+    "analogy": "응급실 대기열은 접수 순서가 아니라 ==위급한 환자부터== 처리돼요. 힙은 이 '항상 제일 급한 것부터 꺼내는' 대기열을 아주 효율적으로 구현한 자료구조예요.",
+    "definition": "힙은 ==완전 이진 트리==이면서, 모든 부모-자식 쌍이 ==힙 속성==(min-heap이면 부모 ≤ 자식, max-heap이면 부모 ≥ 자식)을 만족하는 자료구조입니다. 이 속성 덕분에 루트(맨 위)가 항상 최솟값 또는 최댓값이라, 꺼내는 데 ==O(1)==, 꺼낸 뒤 힙을 다시 정리하는 데 ==O(log n)==이 걸립니다.",
+    "terms": [
+      ["완전 이진 트리", "마지막 레벨을 제외하면 모든 노드가 꽉 차 있는 트리"],
+      ["힙 속성", "부모와 자식 사이에만 성립하는 대소 관계(형제끼리는 순서 없음)"],
+      ["배열 구현", "인덱스 i의 자식은 2i+1, 2i+2, 부모는 (i-1)//2"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "class MinHeap {\n  #arr = [];\n  push(v) {\n    this.#arr.push(v);\n    let i = this.#arr.length - 1;\n    while (i > 0) {\n      const p = Math.floor((i - 1) / 2);\n      if (this.#arr[p] <= this.#arr[i]) break;\n      [this.#arr[p], this.#arr[i]] = [this.#arr[i], this.#arr[p]];\n      i = p;\n    }\n  }\n  pop() {\n    const top = this.#arr[0];\n    const last = this.#arr.pop();\n    if (this.#arr.length) {\n      this.#arr[0] = last;\n      let i = 0;\n      for (;;) {\n        const l = 2 * i + 1, r = 2 * i + 2;\n        let s = i;\n        if (l < this.#arr.length && this.#arr[l] < this.#arr[s]) s = l;\n        if (r < this.#arr.length && this.#arr[r] < this.#arr[s]) s = r;\n        if (s === i) break;\n        [this.#arr[s], this.#arr[i]] = [this.#arr[i], this.#arr[s]];\n        i = s;\n      }\n    }\n    return top;\n  }\n}\n\nconst h = new MinHeap();\n[5, 2, 8, 1, 9].forEach((v) => h.push(v));\n[h.pop(), h.pop(), h.pop()];"
+    },
+    "output": {
+      "js": ["[1, 2, 5]"]
+    },
+    "explain": "삽입(push)은 끝에 추가한 뒤 부모와 비교하며 위로 올라가고(sift-up), 삭제(pop)는 루트를 꺼낸 뒤 마지막 값을 루트로 옮기고 자식과 비교하며 아래로 내려갑니다(sift-down). 둘 다 트리 높이인 ==O(log n)==만큼만 이동하므로 효율적입니다."
+  },
+  "quiz": [
+    {
+      "q": "크기가 n인 min-heap에서 최솟값을 확인만 하는 연산(peek)의 시간복잡도는?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answer": 0,
+      "explain": "힙 속성상 최솟값은 항상 루트(배열의 0번 인덱스)에 있어 바로 확인할 수 있습니다. 꺼낸 뒤 재정렬하는 pop만 O(log n)입니다."
+    },
+    {
+      "q": "n개의 수 중 가장 작은 k개를 구할 때, 전체를 정렬하는 것과 힙을 쓰는 것의 시간복잡도 차이는?",
+      "options": [
+        "둘 다 O(n log n)으로 같다",
+        "정렬은 O(n log n), 힙(크기 k 유지)은 O(n log k)로 k가 작으면 더 유리",
+        "힙이 항상 더 느리다",
+        "둘 다 O(n)이다"
+      ],
+      "answer": 1,
+      "explain": "전체 정렬은 n개를 모두 정렬해야 하지만, 크기 k인 힙만 유지하면 각 원소를 O(log k)에 처리해 O(n log k)로 끝낼 수 있습니다. k가 n보다 훨씬 작을 때 특히 유리합니다."
+    }
+  ],
+  "interview": {
+    "q": "우선순위 큐(힙)가 왜 필요한지, 배열을 정렬해서 쓰는 것과 비교해 설명해 주세요.",
+    "followups": [
+      "삽입과 삭제가 각각 왜 O(log n)인가요?",
+      "배열로 힙을 구현할 때 부모-자식 인덱스 관계는 어떻게 되나요?",
+      "힙은 정렬된 자료구조가 아닌데, 어떻게 최솟값은 항상 바로 꺼낼 수 있나요?",
+      "다익스트라 알고리즘에서 힙이 왜 쓰이나요?",
+      "k번째로 작은 수를 구할 때 힙을 어떻게 활용하나요?"
+    ],
+    "model": "우선순위 큐는 매번 가장 작은(또는 큰) 값을 꺼내야 하는 상황에 쓰는 자료구조입니다. 배열을 정렬해두고 쓰면 삽입마다 O(n)이 걸리거나, 매번 전체를 다시 정렬하면 O(n log n)이 듭니다. 반면 힙은 완전 이진 트리에 힙 속성(부모가 자식보다 항상 작거나 크다)만 유지하면 되므로, 삽입·삭제 모두 트리의 높이인 O(log n)만에 끝납니다. 정렬된 순서 전체를 유지할 필요 없이 '다음에 꺼낼 값'만 빠르게 보장하면 되는 상황이라 훨씬 효율적입니다.",
+    "keywords": [
+      { "label": "힙 속성 / 완전 이진 트리", "match": ["힙 속성", "완전 이진", "부모", "자식"] },
+      { "label": "O(log n)", "match": ["log n", "로그"] },
+      { "label": "정렬보다 효율적", "match": ["정렬", "o(n log n)", "비교"] },
+      { "label": "sift-up / sift-down", "match": ["sift", "올라가", "내려가"] }
+    ]
+  },
+  "project": {
+    "scenario": "작업 큐에 우선순위가 다른 작업(긴급 알림, 일반 알림, 배치 작업)이 섞여 들어오는데, 들어온 순서대로 처리하다 보니 긴급 알림이 몇 분씩 밀린다.",
+    "why": "단순 큐(FIFO)는 들어온 순서만 보장하지, 중요도를 반영하지 못합니다.",
+    "fixes": [
+      ["우선순위 큐로 교체", "작업마다 우선순위 값을 매겨 min-heap(또는 max-heap)으로 관리"],
+      ["동일 우선순위 처리", "같은 우선순위끼리는 들어온 순서(타임스탬프)로 추가 비교"],
+      ["기아 상태 방지", "오래 대기한 낮은 우선순위 작업은 일정 시간마다 우선순위를 올려줌"]
+    ],
+    "resume": "작업 큐를 단순 FIFO에서 우선순위 큐(힙) 기반으로 바꿔, 긴급 알림이 일반 작업에 밀리지 않고 O(log n)에 처리되도록 개선했습니다."
+  },
+  "complexity": {
+    "note": "1초에 약 1억(10⁸) 번 연산을 기준으로 잡아요. 파이썬은 더 느리니 1천만~5천만 번 정도로 보수적으로 판단하세요.",
+    "items": [
+      {
+        "type": "limit",
+        "problem": "n개의 수가 스트림으로 들어올 때, 매 순간 '지금까지 들어온 수 중 k번째로 큰 수'를 구하세요.",
+        "constraint": "n ≤ 1,000,000 · k ≤ 1,000 · 제한 시간 1초",
+        "q": "가장 적절한 풀이의 시간복잡도는?",
+        "options": ["O(n · k)", "O(n log k)", "O(n²)", "O(n log n) 정렬 후 매번 재정렬"],
+        "answer": 1,
+        "hint": "매번 전체를 정렬할 필요 없이, 크기 k짜리 힙 하나만 유지하면 됩니다.",
+        "explain": "크기 k인 min-heap을 유지하면서, 새 수가 힙의 최솟값보다 크면 교체합니다. 각 원소당 O(log k)이므로 전체 O(n log k)입니다. k가 1,000이면 n·log k ≈ 10⁷로 충분히 빠릅니다."
+      },
+      {
+        "type": "code",
+        "problem": "min-heap에 n개의 원소를 하나씩 push한 뒤, 모두 pop하는 코드입니다.",
+        "code": {
+          "js": "function heapSort(arr) {\n  const h = new MinHeap();\n  for (const v of arr) h.push(v);\n  const out = [];\n  for (let i = 0; i < arr.length; i++) out.push(h.pop());\n  return out;\n}"
+        },
+        "q": "arr의 길이가 n일 때 전체 시간복잡도는?",
+        "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+        "answer": 1,
+        "hint": "push와 pop을 각각 n번 하고, 각 연산은 O(log n)입니다.",
+        "explain": "push n번(각 O(log n))과 pop n번(각 O(log n))을 합쳐 O(n log n)입니다. 이 방식 자체가 힙 정렬(heap sort)의 원리예요."
+      }
+    ]
+  }
+}

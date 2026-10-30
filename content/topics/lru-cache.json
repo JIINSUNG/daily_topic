@@ -1,0 +1,72 @@
+{
+  "id": "lru-cache",
+  "track": "CS",
+  "level": 3,
+  "minutes": 15,
+  "title": "LRU 캐시",
+  "summary": "가장 오래 안 쓴 데이터를 버려 메모리를 절약하는 캐시 정책",
+  "concept": {
+    "analogy": "책상이 좁으면 자주 보는 서류만 책상 위에 놓고, 안 본 지 오래된 서류는 서랍에 넣죠. 책상(캐시)이 꽉 차면 ==가장 오래 안 본 서류==부터 서랍(원본 저장소)으로 치웁니다.",
+    "definition": "LRU(Least Recently Used)는 캐시가 꽉 찼을 때 ==가장 최근에 사용되지 않은 항목==을 먼저 제거하는 정책입니다. '사용'은 조회(get)든 갱신(put)이든 모두 해당되고, 사용될 때마다 그 항목을 '가장 최근'으로 끌어올립니다. get/put을 모두 ==O(1)==에 하려면 ==해시맵 + 이중 연결 리스트==를 함께 씁니다.",
+    "terms": [
+      ["해시맵", "key로 노드를 O(1)에 찾기 위한 용도"],
+      ["이중 연결 리스트", "사용 순서(최근 ↔ 오래됨)를 O(1)에 옮기기 위한 용도"],
+      ["용량(capacity)", "캐시가 담을 수 있는 최대 항목 수"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "class LRUCache {\n  #capacity;\n  #map = new Map(); // Map은 삽입 순서를 기억한다\n  constructor(capacity) {\n    this.#capacity = capacity;\n  }\n  get(key) {\n    if (!this.#map.has(key)) return -1;\n    const value = this.#map.get(key);\n    this.#map.delete(key);\n    this.#map.set(key, value); // 맨 뒤로 다시 삽입 = '가장 최근'으로 갱신\n    return value;\n  }\n  put(key, value) {\n    if (this.#map.has(key)) this.#map.delete(key);\n    else if (this.#map.size >= this.#capacity) {\n      const oldest = this.#map.keys().next().value; // 맨 앞 = 가장 오래됨\n      this.#map.delete(oldest);\n    }\n    this.#map.set(key, value);\n  }\n}\n\nconst cache = new LRUCache(2);\ncache.put(1, 'a');\ncache.put(2, 'b');\ncache.get(1);       // 1을 사용 → 1이 '최근'으로 이동\ncache.put(3, 'c');  // 용량 초과 → 가장 오래된 2를 제거\ncache.get(2);"
+    },
+    "output": {
+      "js": ["-1"]
+    },
+    "explain": "1을 get한 순간 1이 '가장 최근'이 되고, 2가 '가장 오래됨'으로 밀립니다. 그 상태에서 3을 넣으면 용량(2)을 넘어서 가장 오래된 2가 제거되고, 이후 2를 get하면 -1(없음)이 나옵니다. Map은 키의 ==삽입 순서==를 기억하기 때문에, 삭제 후 재삽입으로 순서를 간단히 옮길 수 있습니다."
+  },
+  "quiz": [
+    {
+      "q": "LRU 캐시에서 get/put을 O(1)로 만들기 위해 보통 함께 쓰는 두 자료구조는?",
+      "options": [
+        "배열 + 이진 탐색",
+        "해시맵 + 이중 연결 리스트",
+        "스택 + 큐",
+        "힙 + 배열"
+      ],
+      "answer": 1,
+      "explain": "해시맵으로 key → 노드 위치를 O(1)에 찾고, 이중 연결 리스트로 그 노드를 리스트 맨 앞(최근)으로 O(1)에 옮깁니다. 단일 연결 리스트로는 특정 노드를 떼어낼 때 이전 노드를 못 찾아 O(n)이 됩니다."
+    },
+    {
+      "q": "LRU 캐시에서 '사용(use)'으로 인정되는 연산은?",
+      "options": ["get만", "put만", "get과 put 모두", "삭제만"],
+      "answer": 2,
+      "explain": "조회(get)든 값을 갱신(put)이든, 그 key에 접근했다는 사실 자체가 '최근 사용'이므로 둘 다 사용 순서를 갱신시켜야 합니다."
+    }
+  ],
+  "interview": {
+    "q": "LRU 캐시를 O(1)으로 구현하려면 어떤 자료구조 조합이 필요한지 설명해 주세요.",
+    "followups": [
+      "JavaScript의 Map을 쓰면 왜 LRU를 비교적 간단히 구현할 수 있나요?",
+      "해시맵만으로는 왜 안 되고 이중 연결 리스트가 같이 필요한가요?",
+      "LFU(Least Frequently Used) 캐시는 LRU와 어떻게 다른가요?",
+      "캐시 크기를 너무 크게, 또는 너무 작게 잡으면 각각 어떤 문제가 생기나요?",
+      "CPU 캐시, 브라우저 캐시, DB 버퍼 풀에서도 LRU 같은 정책이 쓰이나요?"
+    ],
+    "model": "LRU 캐시는 해시맵과 이중 연결 리스트를 함께 써서 O(1) get/put을 구현합니다. 해시맵은 key로 리스트의 노드를 즉시 찾는 역할을, 이중 연결 리스트는 그 노드를 '가장 최근' 위치로 옮기거나 '가장 오래된' 노드를 제거하는 역할을 맡습니다. 이중 연결 리스트가 필요한 이유는, 특정 노드를 리스트에서 떼어내려면 그 노드의 이전 노드를 알아야 하는데, 단일 연결 리스트는 이걸 O(1)에 할 수 없기 때문입니다. JavaScript의 Map은 키의 삽입 순서를 보장하므로, 삭제 후 재삽입만으로 이 순서 갱신을 흉내낼 수 있어 간단한 구현에 자주 쓰입니다.",
+    "keywords": [
+      { "label": "해시맵 + 이중 연결 리스트", "match": ["해시맵", "연결 리스트", "이중"] },
+      { "label": "O(1) get/put", "match": ["o(1)"] },
+      { "label": "가장 오래된 항목 제거", "match": ["오래된", "오래 안", "least recently"] },
+      { "label": "최근 사용으로 갱신", "match": ["최근", "갱신", "이동"] }
+    ]
+  },
+  "project": {
+    "scenario": "외부 API를 호출해 상품 상세 정보를 보여주는데, 같은 상품을 반복 조회할 때마다 매번 API를 다시 호출해서 응답이 느리고 API 호출 비용(rate limit)도 빠르게 소진된다.",
+    "why": "같은 key(상품 id)에 대한 응답이 자주 반복되는데, 캐시 없이 매번 원격 호출을 하고 있습니다.",
+    "fixes": [
+      ["LRU 캐시 도입", "상품 id → 응답을 메모리 LRU 캐시에 저장, 다음 요청은 캐시에서 바로 반환"],
+      ["TTL 병행", "오래된 가격 정보가 그대로 보이지 않도록 일정 시간 뒤 캐시 항목을 무효화"],
+      ["용량 제한", "메모리를 무한정 쓰지 않도록 캐시 용량을 서비스 규모에 맞게 제한"]
+    ],
+    "resume": "반복 조회되는 상품 상세 API 응답에 LRU 캐시를 도입해 평균 응답 시간을 줄이고, 외부 API 호출 횟수를 크게 줄였습니다."
+  }
+}
