@@ -43,6 +43,20 @@ export function GuideDetailView({ guide }: { guide: Guide }) {
                   ))}
                 </ul>
               )}
+              {s.modelAnswers && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12 }}>
+                  {s.modelAnswers.map((qa, i) => (
+                    <div key={i}>
+                      <h3>모범답안 예시 — {qa.q}</h3>
+                      <div className="model">
+                        <p>
+                          <RichText text={qa.a} />
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </section>
