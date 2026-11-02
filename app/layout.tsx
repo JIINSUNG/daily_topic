@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Black_Han_Sans, IBM_Plex_Sans_KR, JetBrains_Mono } from "next/font/google";
 import { ProgressProvider } from "@/lib/progress/store";
+import { SyncProvider } from "@/lib/sync/SyncProvider";
 import "./globals.css";
 
 const blackHanSans = Black_Han_Sans({
@@ -55,7 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" className={`${blackHanSans.variable} ${ibmPlexSansKr.variable} ${jetbrainsMono.variable}`}>
       <body>
-        <ProgressProvider>{children}</ProgressProvider>
+        <ProgressProvider>
+          <SyncProvider>{children}</SyncProvider>
+        </ProgressProvider>
       </body>
     </html>
   );

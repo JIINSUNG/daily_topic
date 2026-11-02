@@ -44,6 +44,36 @@ pnpm dev        # http://localhost:3000
 
 이후로는 `main` 브랜치에 푸시할 때마다 Vercel이 자동으로 다시 배포합니다.
 
+## 기기 간 동기화 (선택 사항)
+
+기본은 지금처럼 학습 기록이 **이 기기에만** 저장됩니다. Firebase 환경 변수를 넣으면 Google 로그인으로
+같은 계정의 여러 기기에서 진행 기록(완료 토픽, 퀴즈 답, 복습 일정, 자소서 초안 등)을 맞출 수 있습니다.
+안 넣으면 로그인 버튼 자체가 안 보이고, 전부 지금처럼 로컬 전용으로 동작합니다.
+
+**설정 순서**
+
+1. [Firebase 콘솔](https://console.firebase.google.com)에서 프로젝트를 만듭니다.
+2. **Authentication → Sign-in method**에서 Google 로그인을 켭니다.
+3. **Firestore Database**를 만듭니다(프로덕션 모드로 시작해도 됩니다 — 아래 규칙을 배포하면 안전합니다).
+4. 프로젝트 설정 → "내 앱"에서 웹 앱을 추가하면 나오는 설정값을 `.env.local`에 넣습니다(`.env.example` 참고):
+   ```
+   NEXT_PUBLIC_FIREBASE_API_KEY=...
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+   NEXT_PUBLIC_FIREBASE_APP_ID=...
+   ```
+5. Firestore 보안 규칙을 배포합니다(자기 uid 아래 문서만 읽고 쓸 수 있게):
+   ```bash
+   firebase deploy --only firestore:rules
+   ```
+6. Vercel에 배포한다면 위 6개 `NEXT_PUBLIC_*` 값을 Vercel 프로젝트의 환경 변수에도 똑같이 등록하세요.
+
+**동작 방식**: 정적 사이트(서버 없음)라서 로그인은 Google 팝업만 지원합니다. 로그인하면 `users/{uid}/progress/main`
+문서 하나에 진행 기록 전체를 저장하고, 로컬 변경은 1.5초 디바운스 후 올라가며, 다른 기기 변경은 실시간으로 받습니다.
+처음 로그인할 때 이 기기와 클라우드 양쪽에 기록이 있으면 더 최근에 바뀐 쪽을 따릅니다(기록이 통째로 섞이지는 않습니다).
+
 ## 브랜드 에셋 다시 만들기
 
 OG 이미지(`public/og-image.png`)와 앱 아이콘(`app/icon.png`)은 Playwright로 HTML 템플릿을 스크린샷해서 만든 정적 PNG입니다. 디자인을 바꾸려면 `scripts/og-template.html` / `scripts/icon-template.html`을 고친 뒤:
@@ -57,4 +87,4 @@ node scripts/generate-brand-assets.mjs
 
 ## 기술 스택
 
-Next.js(App Router) · TypeScript(strict) · Tailwind CSS 4 · zod · shiki(빌드 타임 코드 하이라이팅) · Vitest · Playwright · pnpm
+Next.js(App Router) · TypeScript(strict) · Tailwind CSS 4 · zod · shiki(빌드 타임 코드 하이라이팅) · Vitest · Playwright · pnpm · Firebase(Auth·Firestore, 기기 간 동기화를 켰을 때만)

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AccountBadge } from "./AccountBadge";
 import { useProgress } from "@/lib/progress/store";
 import { calcStreak } from "@/lib/progress/streak";
 import { getDueTopicIds } from "@/lib/progress/schedule";
@@ -49,6 +50,7 @@ export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: 
         <div className="brand">
           <h1>하루 한 토픽</h1>
           <p>개념 → 응용 → 문제 → 면접 → 내 답변 → 프로젝트, 하루 15분</p>
+          <AccountBadge />
         </div>
         <div className="stats">
           <div className="stat">

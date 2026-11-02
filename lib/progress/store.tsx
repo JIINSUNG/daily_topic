@@ -54,7 +54,7 @@ function blankMockStat(): MockInterviewStat {
 
 export type TrackFilter = Track | "all";
 
-interface AppState extends Versioned {
+export interface AppState extends Versioned {
   version: 1;
   progress: Record<string, TopicProgress>;
   essays: Record<string, EssayProgress>;
@@ -62,6 +62,8 @@ interface AppState extends Versioned {
   days: string[];
   lang: LangPref;
   track: TrackFilter;
+  /** 마지막으로 바뀐 시각(ISO). 기기 간 동기화에서 어느 쪽이 더 최신인지 비교하는 용도. */
+  updatedAt: string;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -72,6 +74,7 @@ const DEFAULT_STATE: AppState = {
   days: [],
   lang: "js",
   track: "all",
+  updatedAt: new Date(0).toISOString(),
 };
 const STORAGE_KEY = "daily-topic-progress";
 
@@ -117,6 +120,18 @@ function getServerSnapshot(): AppState {
   return DEFAULT_STATE;
 }
 
+// ---- 기기 간 동기화(lib/sync)가 쓰는 저수준 API — 모듈 밖에서는 이 두 개만 쓴다 ----
+
+/** 다른 기기(Firestore)에서 받아온 상태를 그대로 로컬에 반영한다(그 문서의 updatedAt을 그대로 둔다 —
+ * 그래야 다음에 로컬 변경과 다시 비교할 때 기준이 맞는다). */
+export function syncRemoteState(next: AppState) {
+  commit(next);
+}
+
+export function useSyncedState(): AppState {
+  return useSyncExternalStore(subscribe, readCache, getServerSnapshot);
+}
+
 interface ProgressContextValue {
   lang: LangPref;
   setLang: (lang: LangPref) => void;
@@ -149,7 +164,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     const prev = readCache();
     const next = fn(prev);
     if (next === prev) return; // 변화 없으면 저장·알림을 건너뛴다.
-    commit(next);
+    commit({ ...next, updatedAt: new Date().toISOString() });
   }, []);
 
   const updateTopicProgress = useCallback(

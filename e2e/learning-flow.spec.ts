@@ -13,6 +13,9 @@ test("홈 → 첫 토픽 → 문제 단계에서 답 고르기 → 해설 표시
   await expect(firstQuestion.locator(".explain")).toHaveCount(0);
 
   await firstQuestion.locator(".opt").first().click();
+  // 고르자마자 정답을 보여주지 않고, 확신 여부를 먼저 물어본다(때려 맞추기 방지).
+  await expect(firstQuestion.locator(".explain")).toHaveCount(0);
+  await firstQuestion.getByRole("button", { name: "알고 골랐어요" }).click();
 
   await expect(firstQuestion.locator(".explain")).toBeVisible();
   // 고른 보기는 잠기고(재선택 불가), 정답 보기가 눈에 보이게 표시된다.
