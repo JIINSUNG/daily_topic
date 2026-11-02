@@ -459,6 +459,10 @@ pre.shiki code {
 .opt:hover:not(:disabled) {
   border-color: var(--accent);
 }
+.opt.sel {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
 .opt.right {
   background: var(--good-soft);
   border-color: var(--good);

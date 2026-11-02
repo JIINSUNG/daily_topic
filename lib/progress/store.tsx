@@ -15,7 +15,10 @@ export type LangPref = "js" | "py";
 export interface TopicProgress {
   seen: StepKey[];
   quiz: Record<number, number>;
+  /** quiz[qi]를 찍어서(확신 없이) 골랐으면 true. 틀린 것과 같이 "복습" 대상으로 묶인다. */
+  guessedQuiz: Record<number, boolean>;
   cx: Record<number, number>;
+  guessedCx: Record<number, boolean>;
   hints: Record<string, boolean>;
   answer: string;
   rating: Rating | null;
@@ -24,7 +27,7 @@ export interface TopicProgress {
 }
 
 function blankProgress(): TopicProgress {
-  return { seen: [], quiz: {}, cx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
+  return { seen: [], quiz: {}, guessedQuiz: {}, cx: {}, guessedCx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
 }
 
 /** 자기소개서 문항 하나에 대한 내 초안. 매일 조금씩 이어 쓸 수 있게 날짜만 같이 기록한다. */
@@ -120,8 +123,10 @@ interface ProgressContextValue {
   days: string[];
   getProgress: (topicId: string) => TopicProgress;
   markSeen: (topicId: string, step: StepKey) => void;
-  setQuizAnswer: (topicId: string, qi: number, idx: number) => void;
-  setCxAnswer: (topicId: string, ci: number, idx: number) => void;
+  setQuizAnswer: (topicId: string, qi: number, idx: number, guessed: boolean) => void;
+  setCxAnswer: (topicId: string, ci: number, idx: number, guessed: boolean) => void;
+  resetQuizAnswer: (topicId: string, qi: number) => void;
+  resetCxAnswer: (topicId: string, ci: number) => void;
   setHint: (topicId: string, key: string) => void;
   setAnswerText: (topicId: string, text: string) => void;
   setRating: (topicId: string, rating: Rating) => void;
@@ -146,15 +151,20 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
 
   const updateTopicProgress = useCallback(
     (topicId: string, patch: (p: TopicProgress) => TopicProgress) => {
-      update((prev) => ({
-        ...prev,
-        progress: { ...prev.progress, [topicId]: patch(prev.progress[topicId] ?? blankProgress()) },
-      }));
+      update((prev) => {
+        const current = prev.progress[topicId] ? { ...blankProgress(), ...prev.progress[topicId] } : blankProgress();
+        return { ...prev, progress: { ...prev.progress, [topicId]: patch(current) } };
+      });
     },
     [update],
   );
 
-  const getProgress = useCallback((topicId: string) => state.progress[topicId] ?? blankProgress(), [state.progress]);
+  // 저장된 값이 blankProgress() 전 스키마(guessedQuiz·guessedCx 없음)일 수 있어
+  // 빈 기본값과 얕은 병합해 항상 모든 필드를 갖춘 객체를 돌려준다.
+  const getProgress = useCallback(
+    (topicId: string) => (state.progress[topicId] ? { ...blankProgress(), ...state.progress[topicId] } : blankProgress()),
+    [state.progress],
+  );
 
   const markSeen = useCallback(
     (topicId: string, step: StepKey) => {
@@ -173,12 +183,39 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setQuizAnswer = useCallback(
-    (topicId: string, qi: number, idx: number) => updateTopicProgress(topicId, (p) => ({ ...p, quiz: { ...p.quiz, [qi]: idx } })),
+    (topicId: string, qi: number, idx: number, guessed: boolean) =>
+      updateTopicProgress(topicId, (p) => ({ ...p, quiz: { ...p.quiz, [qi]: idx }, guessedQuiz: { ...p.guessedQuiz, [qi]: guessed } })),
     [updateTopicProgress],
   );
 
   const setCxAnswer = useCallback(
-    (topicId: string, ci: number, idx: number) => updateTopicProgress(topicId, (p) => ({ ...p, cx: { ...p.cx, [ci]: idx } })),
+    (topicId: string, ci: number, idx: number, guessed: boolean) =>
+      updateTopicProgress(topicId, (p) => ({ ...p, cx: { ...p.cx, [ci]: idx }, guessedCx: { ...p.guessedCx, [ci]: guessed } })),
+    [updateTopicProgress],
+  );
+
+  /** 복습 화면에서 "다시 풀기"를 누르면 해당 문제의 답·찍음 여부를 지워 다시 풀 수 있게 한다. */
+  const resetQuizAnswer = useCallback(
+    (topicId: string, qi: number) =>
+      updateTopicProgress(topicId, (p) => {
+        const quiz = { ...p.quiz };
+        const guessedQuiz = { ...p.guessedQuiz };
+        delete quiz[qi];
+        delete guessedQuiz[qi];
+        return { ...p, quiz, guessedQuiz };
+      }),
+    [updateTopicProgress],
+  );
+
+  const resetCxAnswer = useCallback(
+    (topicId: string, ci: number) =>
+      updateTopicProgress(topicId, (p) => {
+        const cx = { ...p.cx };
+        const guessedCx = { ...p.guessedCx };
+        delete cx[ci];
+        delete guessedCx[ci];
+        return { ...p, cx, guessedCx };
+      }),
     [updateTopicProgress],
   );
 
@@ -255,6 +292,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       markSeen,
       setQuizAnswer,
       setCxAnswer,
+      resetQuizAnswer,
+      resetCxAnswer,
       setHint,
       setAnswerText,
       setRating,
@@ -275,6 +314,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       markSeen,
       setQuizAnswer,
       setCxAnswer,
+      resetQuizAnswer,
+      resetCxAnswer,
       setHint,
       setAnswerText,
       setRating,

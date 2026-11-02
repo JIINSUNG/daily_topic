@@ -26,7 +26,12 @@ export function QuizStep({
             Q{qi + 1}. {q.q}
           </p>
           {q.code && <CodeBlock sample={q.code} highlighted={highlighted[`quiz:${qi}`] ?? {}} />}
-          <QuizChoice item={q} picked={progress.quiz[qi]} onPick={(idx) => setQuizAnswer(topicId, qi, idx)} />
+          <QuizChoice
+            item={q}
+            picked={progress.quiz[qi]}
+            guessed={progress.guessedQuiz[qi]}
+            onPick={(idx, guessed) => setQuizAnswer(topicId, qi, idx, guessed)}
+          />
         </div>
       ))}
     </>

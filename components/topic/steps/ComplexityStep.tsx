@@ -75,7 +75,7 @@ export function ComplexityStep({
                   힌트 보기
                 </button>
               ))}
-            <QuizChoice item={item} picked={picked} onPick={(idx) => setCxAnswer(topicId, ci, idx)} />
+            <QuizChoice item={item} picked={picked} guessed={progress.guessedCx[ci]} onPick={(idx, guessed) => setCxAnswer(topicId, ci, idx, guessed)} />
           </div>
         );
       })}

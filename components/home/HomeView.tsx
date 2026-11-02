@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useProgress } from "@/lib/progress/store";
 import { calcStreak } from "@/lib/progress/streak";
 import { getDueTopicIds } from "@/lib/progress/schedule";
+import { countReviewItems } from "@/lib/progress/reviewQueue";
 import type { Topic, Track } from "@/lib/content/schema";
 
 const LEVEL_LABEL: Record<number, string> = {
@@ -31,6 +32,7 @@ export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: 
   const dueIds = getDueTopicIds(shownTopics, progressById, today);
   const dueTopics = shownTopics.filter((t) => dueIds.includes(t.id));
   const nextTopic = shownTopics.find((t) => !progressById[t.id].done);
+  const reviewCount = countReviewItems(topics, getProgress);
 
   // 안 쓴 문항을 먼저, 그다음 오래전에 고친 문항 순으로 추천한다(매일 조금씩 돌려쓰도록).
   const essayProgressById = Object.fromEntries(essays.map((e) => [e.id, getEssayProgress(e.id)]));
@@ -117,6 +119,18 @@ export function HomeView({ topics, tracks, essays }: { topics: Topic[]; tracks: 
             )}
           </div>
         </section>
+
+        {reviewCount > 0 && (
+          <section className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+            <h2 style={{ margin: 0 }}>틀렸거나 찍은 문제</h2>
+            <p className="note" style={{ margin: 0 }}>
+              틀렸거나 확신 없이 찍어서 맞힌 문제 {reviewCount}개가 모여 있어요. 다시 풀어보고 확실히 익혀요.
+            </p>
+            <Link href="/review" className="btn primary" style={{ alignSelf: "flex-start" }}>
+              복습하러 가기
+            </Link>
+          </section>
+        )}
 
         <section className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
           <h2 style={{ margin: 0 }}>자소서·면접 준비</h2>
