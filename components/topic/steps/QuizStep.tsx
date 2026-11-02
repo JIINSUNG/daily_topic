@@ -2,6 +2,7 @@
 
 import { CodeBlock } from "@/components/CodeBlock";
 import { QuizChoice } from "@/components/topic/QuizChoice";
+import { QuizFillBlank } from "@/components/topic/QuizFillBlank";
 import { useProgress } from "@/lib/progress/store";
 import type { Topic } from "@/lib/content/schema";
 import type { HighlightedMap } from "@/components/topic/TopicStepView";
@@ -15,7 +16,7 @@ export function QuizStep({
   quiz: Topic["quiz"];
   highlighted: HighlightedMap;
 }) {
-  const { getProgress, setQuizAnswer } = useProgress();
+  const { getProgress, setQuizAnswer, setQuizFillAnswer } = useProgress();
   const progress = getProgress(topicId);
 
   return (
@@ -26,12 +27,21 @@ export function QuizStep({
             Q{qi + 1}. {q.q}
           </p>
           {q.code && <CodeBlock sample={q.code} highlighted={highlighted[`quiz:${qi}`] ?? {}} />}
-          <QuizChoice
-            item={q}
-            picked={progress.quiz[qi]}
-            guessed={progress.guessedQuiz[qi]}
-            onPick={(idx, guessed) => setQuizAnswer(topicId, qi, idx, guessed)}
-          />
+          {q.type === "fill" ? (
+            <QuizFillBlank
+              item={q}
+              value={progress.quizText[qi]}
+              guessed={progress.guessedQuiz[qi]}
+              onSubmit={(text, guessed) => setQuizFillAnswer(topicId, qi, text, guessed)}
+            />
+          ) : (
+            <QuizChoice
+              item={q}
+              picked={progress.quiz[qi]}
+              guessed={progress.guessedQuiz[qi]}
+              onPick={(idx, guessed) => setQuizAnswer(topicId, qi, idx, guessed)}
+            />
+          )}
         </div>
       ))}
     </>

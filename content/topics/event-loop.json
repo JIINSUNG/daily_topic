@@ -66,6 +66,18 @@
       ],
       "answer": 3,
       "explain": "Promise의 then/catch/finally, queueMicrotask, MutationObserver가 마이크로태스크입니다. 나머지는 태스크(매크로태스크)예요."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 개념은?",
+      "blank": "자바스크립트 엔진은 콜 스택이 비어 있을 때마다 ___ 큐부터 전부 비우고, 그다음 태스크 큐에서 하나를 꺼내 실행한다.",
+      "answer": [
+        "마이크로태스크",
+        "microtask",
+        "마이크로태스크큐",
+        "마이크로 태스크"
+      ],
+      "explain": "마이크로태스크 큐(Promise.then 등)는 매 이벤트 루프 틱마다 전부 비우고 나서야 태스크 큐(setTimeout 등)에서 하나를 처리합니다."
     }
   ],
   "interview": {

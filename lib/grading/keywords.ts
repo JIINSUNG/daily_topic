@@ -10,7 +10,7 @@ export interface KeywordResult {
   matched: boolean;
 }
 
-function normalize(s: string): string {
+export function normalize(s: string): string {
   return s.toLowerCase().replace(/\s+/g, "");
 }
 

@@ -44,6 +44,24 @@ function withAnswerInRange<T extends z.ZodType<{ options: string[]; answer: numb
 export const ChoiceSchema = withAnswerInRange(ChoiceObjectSchema);
 export type Choice = z.infer<typeof ChoiceSchema>;
 
+/** 객관식(기존 콘텐츠는 type이 없고, 그건 "choice"로 본다). */
+const QuizChoiceItemSchema = withAnswerInRange(ChoiceObjectSchema.extend({ type: z.literal("choice").optional() }));
+export type QuizChoiceItem = z.infer<typeof QuizChoiceItemSchema>;
+
+/** 빈칸 채우기. blank는 빈칸을 ___로 표시한 문장·코드 한 줄, answer는 정답으로 인정할 문자열들(동의어 허용). */
+const QuizFillItemSchema = z.object({
+  type: z.literal("fill"),
+  q: z.string().min(1),
+  code: CodeSampleSchema.optional(),
+  blank: z.string().min(1).includes("___", { message: "blank에는 빈칸 표시 ___가 있어야 합니다" }),
+  answer: z.array(z.string().min(1)).min(1),
+  explain: z.string().min(1),
+});
+export type QuizFillItem = z.infer<typeof QuizFillItemSchema>;
+
+export const QuizItemSchema = z.union([QuizFillItemSchema, QuizChoiceItemSchema]);
+export type QuizItem = z.infer<typeof QuizItemSchema>;
+
 const ComplexityItemObjectSchema = ChoiceObjectSchema.extend({
   type: z.enum(["limit", "code"]), // limit: 제약 조건 보고 판단, code: 코드 보고 판단
   problem: z.string().min(1),
@@ -81,7 +99,7 @@ export const TopicSchema = z.object({
     note: z.object({ py: z.string().min(1).optional() }).optional(), // 파이썬일 때만 보이는 "Python 포인트"
   }),
 
-  quiz: z.array(ChoiceSchema).min(1),
+  quiz: z.array(QuizItemSchema).min(1),
 
   /** 알고리즘 토픽에만 있음. 있으면 "복잡도 판단" 단계가 문제 다음에 생긴다. */
   complexity: z

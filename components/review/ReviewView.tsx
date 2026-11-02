@@ -3,14 +3,16 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { QuizChoice } from "@/components/topic/QuizChoice";
+import { QuizFillBlank } from "@/components/topic/QuizFillBlank";
 import { useProgress } from "@/lib/progress/store";
-import type { Choice, Track } from "@/lib/content/schema";
+import { isQuizFlagged } from "@/lib/progress/reviewQueue";
+import type { Choice, QuizItem, Track } from "@/lib/content/schema";
 
 export interface ReviewTopicSource {
   id: string;
   track: Track;
   title: string;
-  quiz: Choice[];
+  quiz: QuizItem[];
   complexityItems: Choice[];
 }
 
@@ -21,7 +23,7 @@ function itemKey(topicId: string, kind: Kind, i: number) {
 }
 
 export function ReviewView({ topics }: { topics: ReviewTopicSource[] }) {
-  const { getProgress, setQuizAnswer, setCxAnswer, resetQuizAnswer, resetCxAnswer } = useProgress();
+  const { getProgress, setQuizAnswer, setQuizFillAnswer, setCxAnswer, resetQuizAnswer, resetCxAnswer } = useProgress();
   // "다시 풀기"를 누르면 그 순간 틀림/찍음 상태가 지워져서 복습 대상 조건을 더는 만족하지 않는다.
   // retrying에 담아두면 다시 답할 때까지(또는 답한 뒤에도) 목록에서 사라지지 않는다.
   const [retrying, setRetrying] = useState<Set<string>>(new Set());
@@ -32,11 +34,7 @@ export function ReviewView({ topics }: { topics: ReviewTopicSource[] }) {
         const progress = getProgress(topic.id);
         const quizFlagged = topic.quiz
           .map((q, qi) => ({ q, i: qi }))
-          .filter(
-            ({ q, i }) =>
-              retrying.has(itemKey(topic.id, "quiz", i)) ||
-              (progress.quiz[i] !== undefined && (progress.quiz[i] !== q.answer || progress.guessedQuiz[i])),
-          );
+          .filter(({ q, i }) => retrying.has(itemKey(topic.id, "quiz", i)) || isQuizFlagged(q, i, progress));
         const cxFlagged = topic.complexityItems
           .map((q, ci) => ({ q, i: ci }))
           .filter(
@@ -80,22 +78,35 @@ export function ReviewView({ topics }: { topics: ReviewTopicSource[] }) {
             <h2>
               <Link href={`/topics/${topic.id}/quiz`}>{topic.title}</Link>
             </h2>
-            {quizFlagged.map(({ q, i }) => (
-              <div className="q" key={`quiz-${i}`}>
-                <p className="q-title">{q.q}</p>
-                <QuizChoice
-                  item={q}
-                  picked={progress.quiz[i]}
-                  guessed={progress.guessedQuiz[i]}
-                  onPick={(idx, guessed) => setQuizAnswer(topic.id, i, idx, guessed)}
-                />
-                {progress.quiz[i] !== undefined && (
-                  <button type="button" className="link" onClick={() => startRetry(topic.id, "quiz", i)}>
-                    다시 풀기
-                  </button>
-                )}
-              </div>
-            ))}
+            {quizFlagged.map(({ q, i }) => {
+              const isFill = q.type === "fill";
+              const isAnswered = isFill ? progress.quizText[i] !== undefined : progress.quiz[i] !== undefined;
+              return (
+                <div className="q" key={`quiz-${i}`}>
+                  <p className="q-title">{q.q}</p>
+                  {isFill ? (
+                    <QuizFillBlank
+                      item={q}
+                      value={progress.quizText[i]}
+                      guessed={progress.guessedQuiz[i]}
+                      onSubmit={(text, guessed) => setQuizFillAnswer(topic.id, i, text, guessed)}
+                    />
+                  ) : (
+                    <QuizChoice
+                      item={q}
+                      picked={progress.quiz[i]}
+                      guessed={progress.guessedQuiz[i]}
+                      onPick={(idx, guessed) => setQuizAnswer(topic.id, i, idx, guessed)}
+                    />
+                  )}
+                  {isAnswered && (
+                    <button type="button" className="link" onClick={() => startRetry(topic.id, "quiz", i)}>
+                      다시 풀기
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             {cxFlagged.map(({ q, i }) => (
               <div className="q" key={`cx-${i}`}>
                 <p className="q-title">{q.q}</p>

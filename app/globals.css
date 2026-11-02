@@ -538,6 +538,20 @@ textarea {
   flex-wrap: wrap;
   align-items: center;
 }
+.fillinp {
+  flex: 1;
+  min-width: 160px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.fillinp:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .btn {
   padding: 9px 16px;
   border-radius: 10px;

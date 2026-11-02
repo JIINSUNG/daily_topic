@@ -15,7 +15,9 @@ export type LangPref = "js" | "py";
 export interface TopicProgress {
   seen: StepKey[];
   quiz: Record<number, number>;
-  /** quiz[qi]를 찍어서(확신 없이) 골랐으면 true. 틀린 것과 같이 "복습" 대상으로 묶인다. */
+  /** 빈칸 채우기 문제(quiz[qi]가 아니라 이쪽에 텍스트로 저장)의 내가 쓴 답. */
+  quizText: Record<number, string>;
+  /** quiz[qi]/quizText[qi]를 찍어서(확신 없이) 썼으면 true. 틀린 것과 같이 "복습" 대상으로 묶인다. */
   guessedQuiz: Record<number, boolean>;
   cx: Record<number, number>;
   guessedCx: Record<number, boolean>;
@@ -27,7 +29,7 @@ export interface TopicProgress {
 }
 
 function blankProgress(): TopicProgress {
-  return { seen: [], quiz: {}, guessedQuiz: {}, cx: {}, guessedCx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
+  return { seen: [], quiz: {}, quizText: {}, guessedQuiz: {}, cx: {}, guessedCx: {}, hints: {}, answer: "", rating: null, done: false, next: null };
 }
 
 /** 자기소개서 문항 하나에 대한 내 초안. 매일 조금씩 이어 쓸 수 있게 날짜만 같이 기록한다. */
@@ -124,6 +126,7 @@ interface ProgressContextValue {
   getProgress: (topicId: string) => TopicProgress;
   markSeen: (topicId: string, step: StepKey) => void;
   setQuizAnswer: (topicId: string, qi: number, idx: number, guessed: boolean) => void;
+  setQuizFillAnswer: (topicId: string, qi: number, text: string, guessed: boolean) => void;
   setCxAnswer: (topicId: string, ci: number, idx: number, guessed: boolean) => void;
   resetQuizAnswer: (topicId: string, qi: number) => void;
   resetCxAnswer: (topicId: string, ci: number) => void;
@@ -194,15 +197,23 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     [updateTopicProgress],
   );
 
-  /** 복습 화면에서 "다시 풀기"를 누르면 해당 문제의 답·찍음 여부를 지워 다시 풀 수 있게 한다. */
+  const setQuizFillAnswer = useCallback(
+    (topicId: string, qi: number, text: string, guessed: boolean) =>
+      updateTopicProgress(topicId, (p) => ({ ...p, quizText: { ...p.quizText, [qi]: text }, guessedQuiz: { ...p.guessedQuiz, [qi]: guessed } })),
+    [updateTopicProgress],
+  );
+
+  /** 복습 화면에서 "다시 풀기"를 누르면 해당 문제의 답(객관식·빈칸 둘 다)·찍음 여부를 지워 다시 풀 수 있게 한다. */
   const resetQuizAnswer = useCallback(
     (topicId: string, qi: number) =>
       updateTopicProgress(topicId, (p) => {
         const quiz = { ...p.quiz };
+        const quizText = { ...p.quizText };
         const guessedQuiz = { ...p.guessedQuiz };
         delete quiz[qi];
+        delete quizText[qi];
         delete guessedQuiz[qi];
-        return { ...p, quiz, guessedQuiz };
+        return { ...p, quiz, quizText, guessedQuiz };
       }),
     [updateTopicProgress],
   );
@@ -291,6 +302,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       getProgress,
       markSeen,
       setQuizAnswer,
+      setQuizFillAnswer,
       setCxAnswer,
       resetQuizAnswer,
       resetCxAnswer,
@@ -313,6 +325,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       getProgress,
       markSeen,
       setQuizAnswer,
+      setQuizFillAnswer,
       setCxAnswer,
       resetQuizAnswer,
       resetCxAnswer,
