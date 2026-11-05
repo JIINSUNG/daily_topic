@@ -33,6 +33,13 @@
       "options": ["event.currentTarget", "event.target", "event.type", "event.bubbles"],
       "answer": 1,
       "explain": "event.target은 이벤트가 실제로 발생한(클릭된) 요소이고, event.currentTarget은 리스너가 걸려 있는 요소(부모)입니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 속성 이름은?",
+      "blank": "이벤트 위임에서 실제로 이벤트가 발생한 자식 요소를 가리키는 속성은 event.___이다.",
+      "answer": ["target"],
+      "explain": "event.currentTarget은 리스너가 등록된 부모를 가리키고, event.target은 실제로 클릭 등 이벤트가 발생한 자식을 가리킵니다."
     }
   ],
   "interview": {

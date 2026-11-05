@@ -33,6 +33,13 @@
       "options": ["PUT은 조회, PATCH는 삭제", "PUT은 자원 전체를 교체, PATCH는 일부만 수정", "PUT은 생성 전용, PATCH는 수정 전용", "차이가 없고 아무거나 써도 된다"],
       "answer": 1,
       "explain": "PUT은 보낸 데이터로 자원 전체를 덮어쓰고, PATCH는 보낸 필드만 부분적으로 수정합니다. 이름 하나만 바꿀 땐 PATCH가 더 적절합니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 용어는?",
+      "blank": "같은 요청을 여러 번 보내도 결과가 같은 성질을 ___(이)라고 하며, GET·PUT·DELETE가 여기 해당한다.",
+      "answer": ["멱등성", "idempotent", "idempotency"],
+      "explain": "POST는 보낼 때마다 새로운 리소스가 생길 수 있어 멱등하지 않지만, GET·PUT·DELETE는 여러 번 보내도 결과가 같습니다."
     }
   ],
   "interview": {

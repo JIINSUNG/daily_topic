@@ -40,6 +40,13 @@
       "options": ["get만", "put만", "get과 put 모두", "삭제만"],
       "answer": 2,
       "explain": "조회(get)든 값을 갱신(put)이든, 그 key에 접근했다는 사실 자체가 '최근 사용'이므로 둘 다 사용 순서를 갱신시켜야 합니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 자료구조는?",
+      "blank": "LRU 캐시에서 get/put을 모두 O(1)에 처리하려면 해시맵과 ___을(를) 함께 쓴다.",
+      "answer": ["이중 연결 리스트", "doubly linked list"],
+      "explain": "해시맵은 key로 노드를 O(1)에 찾고, 이중 연결 리스트는 사용 순서를 O(1)에 옮기는 역할을 맡습니다."
     }
   ],
   "interview": {

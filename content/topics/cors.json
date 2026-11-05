@@ -33,6 +33,13 @@
       "options": ["GET으로 단순 조회할 때", "Content-Type: application/json으로 POST할 때", "같은 출처에 요청할 때", "img 태그로 이미지를 불러올 때"],
       "answer": 1,
       "explain": "단순 요청 조건(GET/HEAD/POST + 제한된 헤더)을 벗어나면 브라우저가 실제 요청 전에 OPTIONS로 허용 여부를 먼저 확인합니다. application/json Content-Type은 단순 요청 조건에 포함되지 않습니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 용어는?",
+      "blank": "브라우저가 실제 요청을 보내기 전에, 메서드나 헤더가 단순 요청 조건을 벗어나면 OPTIONS로 허용 여부를 먼저 확인하는 요청을 ___(이)라고 한다.",
+      "answer": ["preflight", "프리플라이트"],
+      "explain": "실제 요청이 서버에 부작용을 일으키기 전에 브라우저가 미리 허용 여부를 확인하는 단계입니다."
     }
   ],
   "interview": {

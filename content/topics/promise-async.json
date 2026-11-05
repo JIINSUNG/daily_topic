@@ -33,6 +33,13 @@
       "options": ["await fetch1(); await fetch2();를 순서대로 쓴다", "Promise.all([fetch1(), fetch2()])로 동시에 시작한다", "둘 다 setTimeout으로 감싼다", "async 함수를 두 번 따로 호출만 하고 기다리지 않는다"],
       "answer": 1,
       "explain": "await를 순서대로 쓰면 첫 요청이 끝난 뒤에야 두 번째가 시작됩니다. 서로 관계없는 요청은 Promise.all로 동시에 시작해야 전체 시간이 줄어듭니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 말은?",
+      "blank": "await는 Promise가 끝날 때까지 전체 프로그램이 아니라 ___만 멈춘다.",
+      "answer": ["그 함수", "해당 함수", "함수의 실행"],
+      "explain": "await는 자신이 속한 async 함수의 실행만 일시 정지시키고, 그동안 다른 코드(이벤트 루프)는 계속 돌아갑니다."
     }
   ],
   "interview": {
