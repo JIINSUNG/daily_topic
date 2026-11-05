@@ -5,11 +5,11 @@ import { ContentValidationError, loadContent } from "./load";
 const fixture = (name: string) => path.join(__dirname, "__fixtures__", name);
 
 describe("loadContent", () => {
-  it("실제 content/의 토픽 33개가 모두 검증을 통과한다", () => {
+  it("실제 content/의 토픽 38개가 모두 검증을 통과한다", () => {
     const { index, topics } = loadContent();
 
-    expect(topics).toHaveLength(33);
-    expect(index.order).toHaveLength(33);
+    expect(topics).toHaveLength(38);
+    expect(index.order).toHaveLength(38);
     // index.order 순서대로 topics가 정렬돼 있어야 한다.
     expect(topics.map((t) => t.id)).toEqual(index.order);
   });

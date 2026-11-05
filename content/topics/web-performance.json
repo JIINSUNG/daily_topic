@@ -1,0 +1,85 @@
+{
+  "id": "web-performance",
+  "track": "프론트엔드",
+  "level": 3,
+  "minutes": 15,
+  "title": "웹 성능 최적화",
+  "summary": "Core Web Vitals와 로딩을 빠르게 만드는 기법",
+  "concept": {
+    "analogy": "웹 성능은 식당 서비스 속도예요. LCP는 '메인 메뉴가 테이블에 놓이기까지' 걸리는 시간, INP는 '벨을 눌렀을 때 직원이 반응하기까지' 걸리는 시간, CLS는 '음식을 내려놓다가 테이블이 갑자기 움직이는' 불편함이에요.",
+    "definition": "==Core Web Vitals==는 구글이 정의한 사용자 체감 성능 지표 세 가지입니다. ==LCP==(Largest Contentful Paint)는 가장 큰 콘텐츠가 화면에 그려지는 시간, ==INP==(Interaction to Next Paint)는 사용자 입력에 화면이 반응하는 속도, ==CLS==(Cumulative Layout Shift)는 레이아웃이 예기치 않게 밀리는 정도를 측정합니다. 코드 스플리팅, 이미지 최적화, 지연 로딩(lazy loading) 같은 기법으로 이 지표들을 개선합니다.",
+    "terms": [
+      ["코드 스플리팅", "하나의 큰 번들을 필요한 시점에 나눠 불러오도록 쪼개는 기법"],
+      ["트리 셰이킹", "사용하지 않는 코드를 번들에서 제거하는 최적화"],
+      ["레이아웃 시프트", "콘텐츠가 늦게 로드되며 기존 요소 위치가 밀리는 현상"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "// 코드 스플리팅: 모달은 열 때만 로드\nconst Modal = React.lazy(() => import('./Modal'));\n\nfunction Page() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <button onClick={() => setOpen(true)}>열기</button>\n      {open && (\n        <Suspense fallback={<Spinner />}>\n          <Modal />\n        </Suspense>\n      )}\n    </>\n  );\n}\n\n// CLS 방지: 이미지 크기를 미리 지정해 공간 예약\n// <img src=\"banner.jpg\" width=\"800\" height=\"400\" />"
+    },
+    "output": {
+      "js": []
+    },
+    "explain": "React.lazy + Suspense로 Modal 코드를 초기 번들에서 분리하면, 사용자가 '열기'를 누르기 전까지는 그 코드를 아예 받지 않아 초기 로딩(LCP)이 빨라집니다. img에 width·height를 미리 지정하면 이미지가 로드되기 전에도 브라우저가 공간을 미리 확보해서, 이미지가 나타날 때 아래 콘텐츠가 밀리는 레이아웃 시프트(CLS)를 막을 수 있습니다."
+  },
+  "quiz": [
+    {
+      "q": "LCP를 늘리는(느리게 만드는) 원인이 아닌 것은?",
+      "options": [
+        "느린 서버 응답(TTFB)",
+        "큰 히어로 이미지를 최적화 없이 로드",
+        "렌더링을 막는 CSS를 head에서 동기로 로드",
+        "이미지에 width·height 속성 지정"
+      ],
+      "answer": 3,
+      "explain": "width·height 지정은 CLS(레이아웃 시프트)를 줄이는 방법이지, LCP 자체를 늦추는 요인이 아닙니다."
+    },
+    {
+      "q": "초기 번들 크기를 줄이는 방법이 아닌 것은?",
+      "options": [
+        "코드 스플리팅으로 당장 필요 없는 코드를 분리",
+        "사용하지 않는 라이브러리 함수를 트리 셰이킹으로 제거",
+        "모든 컴포넌트를 하나의 파일에 작성",
+        "큰 라이브러리를 더 가벼운 대안으로 교체"
+      ],
+      "answer": 2,
+      "explain": "파일을 합치는 것과 번들 크기는 무관하거나 오히려 불필요한 코드까지 묶여 트리 셰이킹을 방해할 수 있습니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 용어는?",
+      "blank": "사용자 입력에 화면이 반응하는 속도를 측정하는 Core Web Vitals 지표는 ___이다.",
+      "answer": ["INP", "Interaction to Next Paint"],
+      "explain": "예전에는 FID(First Input Delay)를 썼지만, 첫 입력 이후의 반응성까지 포괄하는 INP로 대체됐습니다."
+    }
+  ],
+  "interview": {
+    "q": "Core Web Vitals 세 가지를 설명하고, 각각 어떻게 개선해봤는지 말해 주세요.",
+    "followups": [
+      "코드 스플리팅을 어느 기준으로 나누나요?",
+      "이미지 최적화는 어떤 방법들이 있나요?",
+      "CLS를 줄이기 위해 폰트 로딩은 어떻게 처리하나요?",
+      "서드파티 스크립트가 성능에 미치는 영향은?",
+      "성능을 측정할 때 Lighthouse 말고 어떤 도구를 쓰나요?"
+    ],
+    "model": "LCP는 가장 큰 콘텐츠가 그려지는 시간, INP는 입력에 반응하는 속도, CLS는 레이아웃이 밀리는 정도를 측정합니다. LCP는 서버 응답 속도 개선, 이미지 포맷 최적화(WebP), 중요하지 않은 리소스의 지연 로딩으로 개선했습니다. INP는 긴 자바스크립트 작업을 쪼개거나 무거운 연산을 디바운스해서 메인 스레드가 오래 막히지 않게 했습니다. CLS는 이미지·광고 영역에 크기를 미리 지정해 공간을 예약하고, 폰트는 font-display: swap과 함께 미리 로드해 텍스트가 밀리지 않게 했습니다. 실제로는 Lighthouse와 실사용자 데이터(RUM)를 같이 보면서 우선순위를 정했습니다.",
+    "keywords": [
+      { "label": "LCP", "match": ["lcp"] },
+      { "label": "INP", "match": ["inp"] },
+      { "label": "CLS", "match": ["cls"] },
+      { "label": "코드 스플리팅/지연 로딩", "match": ["스플리팅", "지연 로딩", "lazy"] },
+      { "label": "측정 도구", "match": ["lighthouse", "rum", "측정"] }
+    ]
+  },
+  "project": {
+    "scenario": "쇼핑몰 상품 목록 페이지의 Lighthouse 점수가 40점대로 낮고, 특히 상품 이미지가 로드되면서 가격 텍스트 위치가 자꾸 아래로 밀린다는 사용자 불만이 있다.",
+    "why": "상품 이미지에 width·height를 지정하지 않아 로드 전엔 공간이 0이었다가, 로드되면서 브라우저가 레이아웃을 다시 계산해 아래 요소들이 밀린다(CLS 악화). 이미지도 원본 크기 그대로 내려받아 LCP도 느리다.",
+    "fixes": [
+      ["이미지 크기 예약", "모든 상품 이미지에 width·height(또는 aspect-ratio)를 지정해 레이아웃 공간 미리 확보"],
+      ["이미지 최적화", "WebP 포맷과 적절한 해상도로 리사이즈, 뷰포트 밖 이미지는 loading=\"lazy\""],
+      ["중요 이미지 우선 로드", "첫 화면에 보이는 히어로 이미지는 fetchpriority=\"high\"로 우선순위 지정"]
+    ],
+    "resume": "상품 이미지 로딩으로 인한 레이아웃 시프트와 느린 LCP를, 이미지 크기 사전 지정과 포맷 최적화로 개선해 Lighthouse 점수를 40점대에서 90점대로 끌어올렸습니다."
+  }
+}

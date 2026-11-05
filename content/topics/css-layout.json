@@ -1,0 +1,80 @@
+{
+  "id": "css-layout",
+  "track": "프론트엔드",
+  "level": 1,
+  "minutes": 10,
+  "title": "CSS 박스 모델과 Flexbox/Grid",
+  "summary": "요소의 크기 계산 방식과 레이아웃 두 가지 도구",
+  "concept": {
+    "analogy": "박스 모델은 선물 상자예요. 내용물(content) 주위에 완충재(padding), 상자 벽(border), 상자 사이 간격(margin)이 겹겹이 쌓여요. Flexbox는 한 줄로 늘어선 상자들을 배치하는 거고, Grid는 바둑판처럼 가로·세로를 동시에 맞추는 거예요.",
+    "definition": "==박스 모델==은 모든 HTML 요소를 content, ==padding==(안쪽 여백), ==border==(테두리), ==margin==(바깥 여백) 네 겹으로 계산합니다. box-sizing: content-box(기본값)는 width가 content만의 너비이고, box-sizing: border-box는 width에 padding과 border까지 포함합니다. ==Flexbox==는 1차원(가로 또는 세로) 배치에, ==Grid==는 2차원(가로·세로 동시) 배치에 적합합니다.",
+    "terms": [
+      ["box-sizing", "width·height 계산에 padding·border를 포함할지 정하는 속성"],
+      ["justify-content / align-items", "Flex·Grid에서 각각 주축·교차축 정렬을 담당"],
+      ["fr 단위", "Grid에서 남은 공간을 비율로 나누는 단위"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": ".box {\n  width: 200px;\n  padding: 20px;\n  border: 5px solid;\n  box-sizing: border-box; /* width에 padding·border 포함 → 실제 content는 150px */\n}\n\n.row {\n  display: flex;\n  justify-content: space-between; /* 주축(가로) 정렬 */\n  align-items: center;            /* 교차축(세로) 정렬 */\n}\n\n.grid {\n  display: grid;\n  grid-template-columns: 1fr 2fr; /* 남은 공간을 1:2로 분배 */\n}"
+    },
+    "output": {
+      "js": []
+    },
+    "explain": "box-sizing: border-box가 없으면 width: 200px에 padding 20px씩, border 5px씩이 더해져 실제 차지하는 너비가 260px이 됩니다. border-box를 쓰면 200px 안에 padding·border가 포함돼 레이아웃 계산이 훨씬 예측 가능해집니다. Flexbox는 justify-content로 주축, align-items로 교차축을 각각 정렬하고, Grid는 fr 단위로 트랙 크기를 비율로 나눕니다."
+  },
+  "quiz": [
+    {
+      "q": "width: 100px, padding: 10px, border: 5px, box-sizing: content-box일 때 실제 화면에서 차지하는 가로 너비는?",
+      "options": ["100px", "110px", "120px", "130px"],
+      "answer": 3,
+      "explain": "content-box는 width가 content만을 의미하므로 100 + padding 10×2 + border 5×2 = 130px입니다."
+    },
+    {
+      "q": "세 칸을 가로로 나열하면서 가운데 칸만 남은 공간을 모두 차지하게 하려면?",
+      "options": [
+        "display: grid; grid-template-columns: auto 1fr auto;",
+        "display: flex; flex-direction: column;",
+        "display: block; float: left;",
+        "display: inline;"
+      ],
+      "answer": 0,
+      "explain": "Grid의 1fr은 남은 공간을 모두 가져가므로, 양옆은 auto(내용 크기)로 두고 가운데만 1fr을 주면 됩니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 속성값은?",
+      "blank": "width에 padding과 border까지 포함해서 계산하게 만드는 box-sizing 값은 ___이다.",
+      "answer": ["border-box"],
+      "explain": "기본값인 content-box와 달리 border-box는 지정한 width 안에 padding·border가 포함돼서 레이아웃을 계산하기 쉬워집니다."
+    }
+  ],
+  "interview": {
+    "q": "Flexbox와 Grid를 각각 언제 쓰는지, 그리고 box-sizing의 차이를 설명해 주세요.",
+    "followups": [
+      "margin collapse(마진 겹침)란 무엇인가요?",
+      "position: absolute는 어떤 요소를 기준으로 배치되나요?",
+      "Flexbox에서 flex: 1의 의미는?",
+      "반응형 레이아웃을 만들 때 Grid의 minmax()는 어떻게 쓰나요?",
+      "box-sizing: border-box를 전역으로 설정하는 이유는?"
+    ],
+    "model": "Flexbox는 네비게이션 바처럼 한 방향으로 늘어선 요소를 정렬할 때, Grid는 카드 레이아웃처럼 가로·세로를 동시에 맞춰야 할 때 씁니다. box-sizing은 기본값인 content-box면 width가 content만을 의미해서 padding·border가 더해진 만큼 실제 크기가 커지고, border-box로 바꾸면 width 안에 padding·border가 포함돼 지정한 크기 그대로 차지합니다. 그래서 보통 전역으로 *{box-sizing: border-box}를 설정해 레이아웃 계산을 예측 가능하게 만듭니다.",
+    "keywords": [
+      { "label": "Flexbox는 1차원", "match": ["flex", "1차원", "한 방향"] },
+      { "label": "Grid는 2차원", "match": ["grid", "2차원"] },
+      { "label": "box-sizing 차이", "match": ["box-sizing", "content-box", "border-box"] },
+      { "label": "padding/border 포함 여부", "match": ["padding", "border"] },
+      { "label": "전역 설정", "match": ["전역", "리셋"] }
+    ]
+  },
+  "project": {
+    "scenario": "카드 3개를 가로로 배치했는데, padding을 추가했더니 카드 영역이 부모 컨테이너 너비를 넘어서 레이아웃이 깨졌다.",
+    "why": "box-sizing 기본값인 content-box 상태에서 width를 고정하고 padding을 추가해서, 실제 차지하는 너비가 지정한 width보다 커졌다.",
+    "fixes": [
+      ["border-box 적용", "box-sizing: border-box로 바꿔 padding이 width 안에 포함되게 함"],
+      ["Flex로 전환", "고정 width 대신 flex: 1로 남은 공간을 자동 분배"],
+      ["전역 리셋", "*{box-sizing: border-box}를 CSS 리셋에 포함해 같은 문제 재발 방지"]
+    ],
+    "resume": "카드 레이아웃이 padding 때문에 넘치던 문제를, box-sizing: border-box 전역 적용과 flex 기반 레이아웃으로 해결했습니다."
+  }
+}

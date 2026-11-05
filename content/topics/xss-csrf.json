@@ -1,0 +1,85 @@
+{
+  "id": "xss-csrf",
+  "track": "프론트엔드",
+  "level": 3,
+  "minutes": 15,
+  "title": "XSS와 CSRF",
+  "summary": "가장 흔한 웹 공격 두 가지와 막는 방법",
+  "concept": {
+    "analogy": "XSS는 도둑이 상점 게시판에 몰래 전단지(악성 스크립트)를 붙여놓고 손님이 읽게 만드는 것이고, CSRF는 손님이 이미 들고 있는 상점 회원증(쿠키)을 몰래 빌려서 손님인 척 주문을 넣는 거예요.",
+    "definition": "==XSS==(Cross-Site Scripting)는 공격자가 악성 스크립트를 웹페이지에 주입해 다른 사용자의 브라우저에서 실행시키는 공격입니다. ==CSRF==(Cross-Site Request Forgery)는 로그인된 사용자가 모르게 공격자가 만든 요청을 대신 보내게 만드는 공격으로, 브라우저가 쿠키를 자동으로 함께 보내는 특성을 악용합니다. XSS는 '스크립트를 실행'시키고, CSRF는 '이미 있는 권한으로 요청'을 보낸다는 차이가 있습니다.",
+    "terms": [
+      ["저장형 XSS", "게시글 등 서버에 저장된 악성 스크립트가 다른 사용자에게 보일 때마다 실행"],
+      ["반사형 XSS", "URL 파라미터 등 요청에 담긴 스크립트가 응답에 그대로 반영돼 실행"],
+      ["SameSite 쿠키", "다른 사이트에서 온 요청에는 쿠키를 안 보내게 제한하는 속성"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "// 위험: 사용자 입력을 그대로 HTML로 삽입 (저장형 XSS 가능)\nelement.innerHTML = `<p>${comment}</p>`;\n\n// comment가 \"<img src=x onerror=alert(document.cookie)>\" 라면\n// 브라우저가 onerror를 실행해 쿠키가 통째로 노출된다\n\n// 안전: 텍스트로만 삽입하거나, React처럼 자동 이스케이프되는 방식 사용\nelement.textContent = comment;"
+    },
+    "output": {
+      "js": []
+    },
+    "explain": "innerHTML은 문자열을 실제 HTML로 해석하기 때문에 태그·이벤트 핸들러가 그대로 실행됩니다. textContent는 문자열을 글자 그대로 넣어서 스크립트가 실행되지 않습니다. React의 JSX도 {comment}처럼 값을 넣으면 기본적으로 이스케이프하지만, dangerouslySetInnerHTML을 쓰면 innerHTML과 똑같이 위험해집니다."
+  },
+  "quiz": [
+    {
+      "q": "CSRF 공격을 막는 방법이 아닌 것은?",
+      "options": [
+        "CSRF 토큰을 요청에 포함시켜 서버가 검증",
+        "쿠키에 SameSite=Strict 속성 설정",
+        "사용자 입력을 저장 전에 이스케이프 처리",
+        "중요한 요청은 GET 대신 POST로 받고 토큰 검증"
+      ],
+      "answer": 2,
+      "explain": "입력값 이스케이프는 XSS를 막는 방법입니다. CSRF는 '위조된 요청' 자체를 막아야 하므로 토큰 검증이나 SameSite 쿠키가 필요합니다."
+    },
+    {
+      "q": "다음 중 XSS 공격이 성립하는 상황은?",
+      "options": [
+        "사용자 입력을 서버에서 이스케이프한 뒤 저장",
+        "사용자 입력을 textContent로만 화면에 표시",
+        "사용자가 쓴 댓글을 innerHTML로 그대로 렌더링",
+        "CSP(Content-Security-Policy)로 인라인 스크립트 차단"
+      ],
+      "answer": 2,
+      "explain": "innerHTML은 HTML로 해석되므로 댓글에 <script>나 이벤트 핸들러가 있으면 그대로 실행됩니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 용어는?",
+      "blank": "공격자가 만든 페이지에서, 사용자가 이미 로그인한 다른 사이트로 몰래 요청을 보내 브라우저가 자동으로 쿠키를 함께 전송하게 만드는 공격을 ___(이)라고 한다.",
+      "answer": ["CSRF", "csrf", "사이트 간 요청 위조"],
+      "explain": "쿠키가 요청에 자동으로 실려가는 브라우저 특성을 악용하는 게 CSRF입니다."
+    }
+  ],
+  "interview": {
+    "q": "XSS와 CSRF의 차이, 그리고 각각 어떻게 막는지 설명해 주세요.",
+    "followups": [
+      "저장형 XSS와 반사형 XSS의 차이는?",
+      "React를 쓰면 XSS에서 완전히 안전한가요?",
+      "SameSite=Strict와 Lax의 차이는?",
+      "CSP(Content-Security-Policy)는 어떤 공격을 막나요?",
+      "CSRF 토큰은 어디에 저장하고 어떻게 검증하나요?"
+    ],
+    "model": "XSS는 공격자의 스크립트를 다른 사용자 브라우저에서 실행시키는 공격이고, CSRF는 사용자가 이미 가진 인증(쿠키)을 몰래 이용해 원치 않는 요청을 대신 보내는 공격입니다. XSS는 사용자 입력을 HTML로 그대로 렌더링할 때(innerHTML 등) 주로 생기고, 서버·클라이언트 양쪽에서 입력을 이스케이프하거나 CSP로 인라인 스크립트를 막아 방어합니다. CSRF는 요청에 CSRF 토큰을 담아 서버가 검증하게 하거나, 쿠키에 SameSite 속성을 설정해 다른 사이트에서 온 요청엔 쿠키가 안 실리게 막습니다. 실무에서는 React를 쓰면 기본 이스케이프 덕분에 XSS 위험이 줄지만 dangerouslySetInnerHTML처럼 예외 지점은 따로 점검했습니다.",
+    "keywords": [
+      { "label": "XSS 정의", "match": ["스크립트", "xss"] },
+      { "label": "CSRF 정의", "match": ["csrf", "위조", "쿠키"] },
+      { "label": "이스케이프/CSP", "match": ["이스케이프", "csp"] },
+      { "label": "SameSite", "match": ["samesite"] },
+      { "label": "CSRF 토큰", "match": ["토큰"] }
+    ]
+  },
+  "project": {
+    "scenario": "게시판 댓글 기능을 배포한 뒤, 특정 댓글을 열람한 사용자들의 계정이 탈취되는 신고가 들어왔다.",
+    "why": "댓글 내용을 innerHTML로 그대로 렌더링해서, 공격자가 <script>로 사용자의 쿠키(세션 토큰)를 자기 서버로 전송하는 댓글을 올렸다.",
+    "fixes": [
+      ["렌더링 방식 변경", "innerHTML 대신 textContent나 프레임워크의 자동 이스케이프 렌더링 사용"],
+      ["서버 측 이스케이프", "저장 전에도 HTML 특수문자를 이스케이프해 2중으로 방어"],
+      ["CSP 헤더 적용", "인라인 스크립트 실행을 차단하는 Content-Security-Policy 설정"]
+    ],
+    "resume": "댓글 XSS로 세션 쿠키가 탈취되던 취약점을, innerHTML 렌더링을 제거하고 CSP 헤더를 추가해 2중으로 방어했습니다."
+  }
+}

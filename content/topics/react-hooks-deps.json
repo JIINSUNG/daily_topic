@@ -1,0 +1,80 @@
+{
+  "id": "react-hooks-deps",
+  "track": "프론트엔드",
+  "level": 3,
+  "minutes": 12,
+  "title": "useEffect 의존성 배열",
+  "summary": "언제 effect가 다시 실행되는지와 흔한 실수",
+  "concept": {
+    "analogy": "useEffect는 '이 재료들이 바뀌면 다시 요리해줘'라고 주방에 맡기는 레시피 같은 거예요. 의존성 배열이 재료 목록인데, 빠뜨린 재료가 있으면 바뀌어도 모르고 예전 맛(오래된 값)을 계속 냅니다.",
+    "definition": "==useEffect==의 두 번째 인자인 ==의존성 배열==은 '이 값들이 바뀌면 effect를 다시 실행하라'는 뜻입니다. 배열을 생략하면 렌더마다, 빈 배열([])이면 마운트 시 한 번만, 특정 값을 넣으면 그 값이 바뀔 때만 실행됩니다. effect 안에서 쓰는 외부 값을 의존성 배열에서 빠뜨리면 ==stale closure==(오래된 값을 참조하는 클로저) 문제가 생깁니다.",
+    "terms": [
+      ["클린업 함수", "effect가 다시 실행되기 전·언마운트될 때 호출되는 반환 함수"],
+      ["stale closure", "effect가 생성될 때의 오래된 값을 계속 참조하는 문제"],
+      ["exhaustive-deps", "effect에서 쓰는 모든 값을 의존성 배열에 넣으라는 ESLint 규칙"]
+    ]
+  },
+  "apply": {
+    "code": {
+      "js": "function Timer({ step }) {\n  const [count, setCount] = useState(0);\n\n  useEffect(() => {\n    const id = setInterval(() => {\n      setCount((c) => c + step); // step을 의존성에서 빠뜨리면 첫 렌더의 step만 계속 씀\n    }, 1000);\n    return () => clearInterval(id); // 클린업: 이전 interval 정리\n  }, [step]);\n\n  return count;\n}"
+    },
+    "output": {
+      "js": []
+    },
+    "explain": "setInterval 콜백은 effect가 실행될 때의 step 값을 기억합니다(클로저). step이 바뀌어도 의존성 배열에 없으면 effect가 재실행되지 않아 이전 값을 계속 씁니다. setCount(c => c + step)처럼 함수형 업데이트를 쓰거나, step을 의존성 배열에 넣어 값이 바뀔 때마다 interval을 새로 만들어야 최신 값을 반영합니다."
+  },
+  "quiz": [
+    {
+      "q": "다음 중 effect가 '마운트 시 한 번만' 실행되는 경우는?",
+      "options": ["의존성 배열을 생략", "의존성 배열이 []", "의존성 배열에 상태값 하나", "의존성 배열에 함수 하나"],
+      "answer": 1,
+      "explain": "빈 배열은 처음 렌더링 후 한 번만 실행하고, 이후에는 값이 바뀌어도 다시 실행하지 않는다는 뜻입니다."
+    },
+    {
+      "q": "클린업 함수가 호출되는 시점이 아닌 것은?",
+      "options": [
+        "컴포넌트가 언마운트될 때",
+        "의존성 값이 바뀌어 effect가 다시 실행되기 직전",
+        "컴포넌트가 처음 마운트되기 직전",
+        "StrictMode 개발 모드에서 effect를 검증 목적으로 두 번 실행할 때"
+      ],
+      "answer": 2,
+      "explain": "클린업은 '정리할 이전 effect'가 있을 때만 호출됩니다. 최초 마운트 전에는 정리할 게 없어서 호출되지 않습니다."
+    },
+    {
+      "type": "fill",
+      "q": "빈칸에 들어갈 개념은?",
+      "blank": "effect 안에서 외부 값을 참조하는데 의존성 배열에 빠뜨리면, 그 effect는 생성될 때의 오래된 값을 계속 참조하게 된다. 이를 ___(이)라고 부른다.",
+      "answer": ["stale closure", "스테일 클로저"],
+      "explain": "클로저가 effect가 만들어질 때의 값을 '그대로 기억'해서 생기는 문제라 stale(오래된) closure라고 부릅니다."
+    }
+  ],
+  "interview": {
+    "q": "useEffect의 의존성 배열을 빠뜨려서 버그가 생긴 경험이 있나요? 어떻게 해결했는지 설명해 주세요.",
+    "followups": [
+      "의존성 배열을 생략하는 것과 빈 배열([])의 차이는?",
+      "exhaustive-deps 규칙을 끄고 싶을 때는 어떤 상황인가요?",
+      "함수를 의존성 배열에 넣으면 매 렌더마다 effect가 실행되는 이유는?",
+      "useEffect와 useLayoutEffect의 차이는?",
+      "클린업 함수는 왜 필요한가요?"
+    ],
+    "model": "의존성 배열은 effect가 참조하는 값이 바뀔 때만 다시 실행하도록 알려주는 역할을 합니다. 예전에 타이머 effect에서 count를 의존성에 안 넣고 setCount(count+1)처럼 직접 값을 참조해서, 마운트 시점의 count(0)만 계속 더해지는 버그를 겪었습니다. setCount(c => c+1)처럼 함수형 업데이트로 최신 상태를 받아오거나, 꼭 값 자체가 필요하면 의존성 배열에 넣고 effect를 재생성하도록 고쳤습니다. ESLint의 exhaustive-deps 규칙을 켜 두면 빠뜨린 의존성을 자동으로 잡아줘서 그 뒤로는 규칙을 꼭 켜 둡니다.",
+    "keywords": [
+      { "label": "의존성 배열", "match": ["의존성", "deps"] },
+      { "label": "stale closure", "match": ["stale", "클로저"] },
+      { "label": "함수형 업데이트", "match": ["함수형", "setcount(c", "이전 값"] },
+      { "label": "exhaustive-deps", "match": ["exhaustive", "eslint"] },
+      { "label": "클린업", "match": ["클린업", "cleanup"] }
+    ]
+  },
+  "project": {
+    "scenario": "검색창에서 debounce된 검색어로 API를 호출하는 effect를 만들었는데, 검색어를 빠르게 여러 번 바꾸면 먼저 보낸 느린 요청의 결과가 나중에 와서 화면에 옛날 검색 결과가 덮어써진다.",
+    "why": "effect가 재실행될 때 이전 요청을 취소하거나 무시하지 않아서, 응답이 늦게 온 요청이 최신 요청의 결과를 덮어씁니다(race condition).",
+    "fixes": [
+      ["클린업으로 취소 플래그", "effect가 반환하는 클린업 함수에서 '이 effect는 무효'라는 플래그를 세워 늦게 온 응답을 무시"],
+      ["AbortController", "fetch 요청을 AbortController로 묶어 클린업 시점에 실제로 요청을 취소"],
+      ["최신 요청 ID 비교", "요청마다 증가하는 ID를 저장해두고, 응답이 왔을 때 최신 ID와 다르면 무시"]
+    ],
+    "resume": "검색 API 요청이 늦게 도착한 응답으로 최신 결과를 덮어쓰는 race condition을, effect 클린업에서 AbortController로 이전 요청을 취소하도록 고쳐 해결했습니다."
+  }
+}
