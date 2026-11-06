@@ -10,8 +10,11 @@
 // - 로컬 상태가 바뀔 때마다 1.5초 디바운스해서 합쳐진 결과를 클라우드에 올려보낸다.
 //   (문서 전체를 "더 최신 쪽이 이긴다"로 통째로 덮어쓰면, 두 기기를 오프라인으로 번갈아 쓸 때
 //   한쪽에서만 공부한 토픽이 사라질 수 있어 merge로 바꿨다.)
+//
+// firebase/firestore 값(함수)들은 실제로 로그인한 사용자가 있을 때만 동적 import로 받는다 —
+// 로그인 안 한 대다수 사용자의 번들에 Firestore SDK가 안 섞여 들어가게.
 import { useEffect, useRef } from "react";
-import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import type { Unsubscribe } from "firebase/firestore";
 import { useAuth } from "./authContext";
 import { getFirebaseDb } from "../firebase/client";
 import { mergeAppState } from "../progress/merge";
@@ -32,13 +35,14 @@ export function useProgressSync() {
 
   useEffect(() => {
     if (!enabled || !user) return;
-    const db = getFirebaseDb();
-    if (!db) return;
-    const ref = doc(db, "users", user.uid, "progress", "main");
-    let unsub: (() => void) | undefined;
+    let unsub: Unsubscribe | undefined;
     let cancelled = false;
 
     (async () => {
+      const [db, { doc, getDoc, onSnapshot, setDoc }] = await Promise.all([getFirebaseDb(), import("firebase/firestore")]);
+      if (cancelled || !db) return;
+      const ref = doc(db, "users", user.uid, "progress", "main");
+
       const snap = await getDoc(ref);
       if (cancelled) return;
       if (snap.exists()) {
@@ -67,14 +71,16 @@ export function useProgressSync() {
   useEffect(() => {
     if (!enabled || !user) return;
     if (pulledFor.current !== user.uid) return; // 최초 비교가 끝나기 전엔 섣불리 덮어쓰지 않는다
-    const db = getFirebaseDb();
-    if (!db) return;
     if (writeTimer.current) clearTimeout(writeTimer.current);
     writeTimer.current = setTimeout(() => {
-      const ref = doc(db, "users", user.uid, "progress", "main");
-      setDoc(ref, state).catch(() => {
-        // 오프라인 등으로 실패해도 로컬 데이터는 그대로 안전하다 — 다음 변경 때 다시 시도된다.
-      });
+      (async () => {
+        const [db, { doc, setDoc }] = await Promise.all([getFirebaseDb(), import("firebase/firestore")]);
+        if (!db) return;
+        const ref = doc(db, "users", user.uid, "progress", "main");
+        setDoc(ref, state).catch(() => {
+          // 오프라인 등으로 실패해도 로컬 데이터는 그대로 안전하다 — 다음 변경 때 다시 시도된다.
+        });
+      })();
     }, DEBOUNCE_MS);
     return () => {
       if (writeTimer.current) clearTimeout(writeTimer.current);

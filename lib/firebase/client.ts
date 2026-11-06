@@ -2,10 +2,11 @@
 
 // Firebase는 선택 사항이다 — env 값이 없으면 앱은 그냥 로컬 전용으로 동작한다(firebaseEnabled=false).
 // 서버가 없는 정적 export(output: "export")라서 로그인은 클라이언트 전용 방식(Google 팝업)만 쓴다.
-import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
-
+//
+// SDK 자체도 동적 import로 쪼갠다 — Firestore+Auth는 합쳐서 수백 KB라, 정적으로 import하면
+// Firebase를 안 쓰는(env 자체가 없거나, 로그인 안 하는) 대다수 사용자도 홈 화면에서부터 그걸
+// 받게 된다. firebaseEnabled만 동기(env 존재 여부)로 두고, 나머지는 실제로 로그인·동기화를
+// 시도할 때만 받는다.
 const config = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -20,20 +21,23 @@ const config = {
 // AccountBadge 같은 걸 쓰는 컴포넌트에서 하이드레이션 불일치가 난다.
 export const firebaseEnabled = !!config.apiKey && !!config.projectId;
 
-let app: FirebaseApp | null = null;
+let appPromise: Promise<import("firebase/app").FirebaseApp> | null = null;
 
-function getFirebaseApp(): FirebaseApp | null {
+function getFirebaseApp() {
+  if (!appPromise) {
+    appPromise = import("firebase/app").then(({ initializeApp, getApps }) => getApps()[0] ?? initializeApp(config));
+  }
+  return appPromise;
+}
+
+export async function getFirebaseAuth(): Promise<import("firebase/auth").Auth | null> {
   if (!firebaseEnabled) return null;
-  if (!app) app = getApps()[0] ?? initializeApp(config);
-  return app;
+  const [app, { getAuth }] = await Promise.all([getFirebaseApp(), import("firebase/auth")]);
+  return getAuth(app);
 }
 
-export function getFirebaseAuth(): Auth | null {
-  const a = getFirebaseApp();
-  return a ? getAuth(a) : null;
-}
-
-export function getFirebaseDb(): Firestore | null {
-  const a = getFirebaseApp();
-  return a ? getFirestore(a) : null;
+export async function getFirebaseDb(): Promise<import("firebase/firestore").Firestore | null> {
+  if (!firebaseEnabled) return null;
+  const [app, { getFirestore }] = await Promise.all([getFirebaseApp(), import("firebase/firestore")]);
+  return getFirestore(app);
 }

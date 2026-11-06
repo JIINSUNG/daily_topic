@@ -2,14 +2,9 @@
 
 // 로그인 상태만 다룬다. 실제 진행 기록 동기화는 useProgressSync.ts가 이 상태를 보고 한다.
 // 서버가 없는 정적 사이트라 로그인은 Google 팝업(클라이언트 전용) 하나만 지원한다.
+// firebase/auth의 값(함수)들은 실제로 로그인을 시도할 때만 동적 import로 받는다 — client.ts 참고.
 import { createContext, useContext, useEffect, useState } from "react";
-import {
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut as fbSignOut,
-  type User,
-} from "firebase/auth";
+import type { User } from "firebase/auth";
 import { firebaseEnabled, getFirebaseAuth } from "../firebase/client";
 
 interface AuthContextValue {
@@ -30,20 +25,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!firebaseEnabled) return;
-    const auth = getFirebaseAuth();
-    if (!auth) return;
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return unsub;
+    let unsub: (() => void) | undefined;
+    let cancelled = false;
+
+    (async () => {
+      const [auth, { onAuthStateChanged }] = await Promise.all([getFirebaseAuth(), import("firebase/auth")]);
+      if (cancelled || !auth) return;
+      unsub = onAuthStateChanged(auth, (u) => {
+        setUser(u);
+        setLoading(false);
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      unsub?.();
+    };
   }, []);
 
   const signIn = async () => {
-    const auth = getFirebaseAuth();
-    if (!auth) return;
     setError(null);
     try {
+      const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([getFirebaseAuth(), import("firebase/auth")]);
+      if (!auth) return;
       await signInWithPopup(auth, new GoogleAuthProvider());
     } catch {
       setError("로그인에 실패했어요. 다시 시도해주세요.");
@@ -51,9 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOutUser = async () => {
-    const auth = getFirebaseAuth();
+    const [auth, { signOut }] = await Promise.all([getFirebaseAuth(), import("firebase/auth")]);
     if (!auth) return;
-    await fbSignOut(auth);
+    await signOut(auth);
   };
 
   return (
